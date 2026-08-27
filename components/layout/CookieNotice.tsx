@@ -54,8 +54,7 @@ export function CookieNotice() {
     >
       <div className="flex flex-col gap-4 rounded-2xl bg-navy/95 px-5 py-4 shadow-[0_18px_44px_rgba(5,12,30,0.45)] ring-1 ring-white/12 backdrop-blur-[10px] sm:flex-row sm:items-center sm:gap-5 sm:px-6">
         <p className="text-[0.8125rem] leading-relaxed text-white/75">
-          Сайт использует cookie — сейчас только те, что сохраняет виджет Яндекс&nbsp;Карт в блоке
-          контактов.
+          Мы используем файлы cookie. Продолжая пользоваться сайтом, вы соглашаетесь с этим.
         </p>
 
         <button
@@ -63,7 +62,7 @@ export function CookieNotice() {
           onClick={accept}
           className="h-10 shrink-0 rounded-full bg-teal px-6 font-display text-[0.8125rem] font-bold text-white transition-[background-color,transform] duration-200 hover:bg-teal-hi active:scale-[0.97]"
         >
-          Хорошо
+          Принять
         </button>
       </div>
     </div>
