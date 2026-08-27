@@ -1,9 +1,8 @@
 import Image from 'next/image'
 import { Button } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
-import { PendingBadge } from '@/components/ui/PendingBadge'
 import { IconTelegram, IconVk } from '@/components/ui/Icons'
-import { org, footerLinks, pending } from '@/lib/content'
+import { org, footerLinks } from '@/lib/content'
 
 export function SiteFooter() {
   return (
@@ -17,8 +16,10 @@ export function SiteFooter() {
             height={482}
             className="h-11 w-auto"
           />
-          <p className="mt-5 text-[0.75rem] text-white/45">
-            Химчистка «Блеск», {org.region}, г.&nbsp;{org.city}
+          <p className="mt-5 text-[0.75rem] leading-relaxed text-white/50">
+            Химчистка «Блеск»
+            <br />
+            {org.region}, г.&nbsp;{org.city}, {org.street}
           </p>
         </div>
 
@@ -58,9 +59,8 @@ export function SiteFooter() {
           >
             {org.email}
           </a>
-          <p className="mt-2 text-[0.75rem] text-white/45">
-            <PendingBadge tone="dark">Уточнить</PendingBadge>
-            {pending.hours}
+          <p className="mt-2 text-[0.75rem] text-white/60">
+            Часы работы <span className="tabular-nums">{org.hours}</span>
           </p>
 
           <div className="mt-5 flex gap-2.5 lg:justify-end">

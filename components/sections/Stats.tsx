@@ -80,9 +80,9 @@ export function Stats() {
                   className="pointer-events-none absolute right-4 bottom-4 h-24 w-24 opacity-[0.05] transition-transform duration-700 group-hover:scale-110"
                 />
 
-                <span className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_10px_rgba(14,26,53,0.06)] transition-colors duration-300 group-hover:bg-teal/10">
+                {/* <span className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-[0_2px_10px_rgba(14,26,53,0.06)] transition-colors duration-300 group-hover:bg-teal/10">
                   <BrandIcon name={s.icon} className="h-6 w-6" />
-                </span>
+                </span> */}
 
                 <p className="relative mt-6 flex h-[1em] items-center font-display text-[clamp(2.5rem,3.6vw,3.5rem)] leading-none font-extrabold text-navy tabular-nums">
                   {n === null ? (

@@ -1,6 +1,5 @@
-import { PendingBadge } from '@/components/ui/PendingBadge'
 import { IconArrow } from '@/components/ui/Icons'
-import { org, pending } from '@/lib/content'
+import { org } from '@/lib/content'
 
 export function PickupPoint() {
   return (
@@ -11,9 +10,9 @@ export function PickupPoint() {
           {org.region},<br />
           г.&nbsp;{org.city}, {org.street}
         </p>
-        <p className="mt-4 text-[0.75rem] leading-relaxed text-slate-soft">
-          <PendingBadge>Уточнить</PendingBadge>
-          {pending.house}, {pending.hours}
+        <p className="mt-3 flex items-baseline gap-2 text-[0.8125rem] text-slate">
+          <span className="label text-slate-soft">Часы</span>
+          <span className="font-semibold text-navy tabular-nums">{org.hours}</span>
         </p>
         <a
           href={org.routeUrl}
@@ -26,7 +25,6 @@ export function PickupPoint() {
         </a>
       </div>
 
-      {/* Виджет ищет улицу: номер дома не подтверждён, ставить наугад нельзя */}
       <div className="relative aspect-[16/10] overflow-hidden rounded-lg border border-line bg-mist">
         <iframe
           src={org.mapEmbedUrl}

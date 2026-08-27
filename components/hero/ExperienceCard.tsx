@@ -14,7 +14,7 @@ export function ExperienceCard() {
           <BrandIcon name="value-chestnost.svg" className="h-5 w-5 lg:h-[1.4vw] lg:w-[1.4vw]" />
         </span>
         <strong className="font-display text-[1.75rem] leading-none font-bold text-white lg:text-[1.9vw] lg:text-navy">
-          15+
+          20+
         </strong>
         <b className="font-display text-[0.9375rem] leading-none font-semibold text-white/85 lg:mt-[0.55vw] lg:w-full lg:text-[1vw] lg:text-navy">
           лет опыта

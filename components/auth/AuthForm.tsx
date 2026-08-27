@@ -2,6 +2,7 @@
 
 import { useId, useState } from 'react'
 import { IconArrow, IconCheck } from '@/components/ui/Icons'
+import { PendingBadge } from '@/components/ui/PendingBadge'
 import { org, pending } from '@/lib/content'
 
 type Mode = 'login' | 'register'
@@ -75,9 +76,7 @@ export function AuthForm() {
   return (
     <div className="w-full max-w-[27rem]">
       <p className="rounded-xl border border-dashed border-slate-soft/50 bg-mist/60 px-4 py-3 text-[0.8125rem] leading-snug text-slate">
-        <span className="mr-1.5 inline-block rounded border border-dashed border-slate-soft/60 px-1.5 py-0.5 align-[0.1em] text-[0.625rem] leading-none tracking-wider uppercase">
-          Заглушка
-        </span>
+        <PendingBadge>Заглушка</PendingBadge>
         Кабинет ещё не подключён к системе учёта заказов. Форма готова, но данные никуда не
         отправляются.
       </p>
