@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
+import Image, { getImageProps } from 'next/image'
 import { AuthForm } from '@/components/auth/AuthForm'
 import { IconArrow, IconCheck } from '@/components/ui/Icons'
 import { cabinetFeatures } from '@/lib/content'
@@ -18,29 +18,73 @@ export const metadata: Metadata = {
   },
 }
 
+const PHOTO_ALT = 'Уведомление «Блеска» о готовом заказе на экране телефона'
+
+/**
+ * Кадр в двух версиях. На десктопе панель вертикальная, на телефоне это
+ * короткая полоса во всю ширину: общий кадр там сжимается, и уведомление
+ * на экране телефона перестаёт читаться. Мобильная версия — крупный кроп
+ * вокруг самого телефона. Источник выбирает браузер, грузится ровно один.
+ */
+function PhotoSources() {
+  const {
+    props: { srcSet: tall },
+  } = getImageProps({
+    alt: PHOTO_ALT,
+    src: '/photo/cabinet-push.jpg',
+    width: 1696,
+    height: 2528,
+    sizes: '47vw',
+    quality: 90,
+  })
+  const {
+    props: { srcSet: wide, ...rest },
+  } = getImageProps({
+    alt: PHOTO_ALT,
+    src: '/photo/cabinet-push-m.jpg',
+    width: 1200,
+    height: 833,
+    sizes: '100vw',
+    quality: 82,
+  })
+
+  return (
+    <picture>
+      <source media="(min-width: 1024px)" srcSet={tall} sizes="47vw" />
+      <source srcSet={wide} sizes="100vw" />
+      <img
+        {...rest}
+        loading="eager"
+        fetchPriority="high"
+        className="absolute inset-0 h-full w-full object-cover object-center lg:object-[55%_46%]"
+      />
+    </picture>
+  )
+}
+
 export default function Page() {
   return (
     <main className="lg:grid lg:min-h-svh lg:grid-cols-[0.92fr_1fr]">
       {/* ---------------------------------------- левая: смысл кабинета */}
       <section className="relative flex flex-col bg-navy">
-        <div className="relative h-[30svh] min-h-[200px] w-full lg:absolute lg:inset-0 lg:h-full lg:min-h-0">
-          <Image
-            src="/photo/cabinet-desk.jpg"
-            alt="Сотрудница «Блеска» оформляет заказ на приёмном пункте"
-            fill
-            priority
-            sizes="(max-width: 1023px) 100vw, 47vw"
-            quality={90}
-            className="object-cover object-[58%_22%]"
+        {/* Кадр занимает верх панели, а не лежит под текстом: уведомление на
+            экране телефона должно читаться, а не тонуть под списком. */}
+        <div className="relative h-[32svh] min-h-[210px] w-full shrink-0 lg:h-[40svh]">
+          <PhotoSources />
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-navy/70 to-transparent"
           />
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-t from-navy via-navy/25 to-transparent lg:from-navy lg:via-navy/62 lg:to-navy/15"
+            className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-navy to-transparent"
           />
-        </div>
 
-        <div className="relative flex flex-1 flex-col px-6 pt-8 pb-10 lg:px-12 lg:pt-10 lg:pb-14">
-          <a href="/" aria-label="Блеск — на главную" className="w-fit">
+          <a
+            href="/"
+            aria-label="Блеск — на главную"
+            className="absolute top-6 left-6 lg:top-8 lg:left-12"
+          >
             <Image
               src="/brand/logo-h-white.svg"
               alt="Блеск — профессиональная химчистка"
@@ -49,14 +93,16 @@ export default function Page() {
               className="h-9 w-auto lg:h-11"
             />
           </a>
+        </div>
 
-          <div className="mt-10 lg:mt-auto lg:pt-16">
+        <div className="relative flex flex-1 flex-col px-6 pt-8 pb-10 lg:px-12 lg:pt-10 lg:pb-14">
+          <div className="lg:mt-auto">
             <p className="label text-teal">Личный кабинет</p>
             <h1 className="h2 mt-4 max-w-[18ch] text-[clamp(1.5rem,2.6vw,2.125rem)] text-white">
               Ваши вещи под полным цифровым контролем
             </h1>
 
-            <ul className="mt-8 grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-1 lg:gap-y-3.5">
+            <ul className="mt-8 grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-1 lg:gap-y-3">
               {cabinetFeatures.map((f) => (
                 <li key={f.name} className="flex gap-3">
                   <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal/15">
@@ -79,10 +125,6 @@ export default function Page() {
               ))}
             </ul>
 
-            <p className="mt-8 max-w-[46ch] text-[0.75rem] leading-relaxed text-white/60">
-              Состав кабинета — из стратегии проекта. Он появится, когда «Блеск» подключит его к
-              своей системе учёта заказов.
-            </p>
           </div>
         </div>
       </section>
