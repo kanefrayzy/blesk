@@ -115,7 +115,10 @@ export type HeroSlide = {
   title: readonly string[]
   accent: readonly string[]
   note: string
+  /** Широкий кадр: правая часть первого экрана на десктопе. */
   photo: string
+  /** Вертикальный кадр под мобильную раскладку — там окно почти 9:16. */
+  photoMobile: string
   alt: string
 }
 
@@ -127,6 +130,7 @@ export const heroSlides: readonly HeroSlide[] = [
     accent: ['для дома, семьи', 'и бизнеса'],
     note: 'Премиальная химчистка с вниманием к деталям. Чистота, которой можно доверять.',
     photo: '/photo/hero-odezhda.jpg',
+    photoMobile: '/photo/hero-odezhda-m.jpg',
     alt: 'Технолог «Блеска» осматривает шов шерстяного пальто в цехе',
   },
   {
@@ -136,6 +140,7 @@ export const heroSlides: readonly HeroSlide[] = [
     accent: ['в руках', 'специалистов'],
     note: 'Специальные методики для натуральных материалов — с описью изделия при приёме.',
     photo: '/photo/hero-shuba.jpg',
+    photoMobile: '/photo/hero-shuba-m.jpg',
     alt: 'Специалист «Блеска» расчёсывает мех шубы под рабочей лампой',
   },
   {
@@ -145,6 +150,7 @@ export const heroSlides: readonly HeroSlide[] = [
     accent: ['чистый', 'и свежий'],
     note: 'Шторы, покрывала и постельное бельё возвращаются готовыми к дому.',
     photo: '/photo/hero-tekstil.jpg',
+    photoMobile: '/photo/hero-tekstil-m.jpg',
     alt: 'Сотрудница «Блеска» складывает чистое постельное бельё в цехе',
   },
   {
@@ -154,6 +160,7 @@ export const heroSlides: readonly HeroSlide[] = [
     accent: ['для самых', 'маленьких'],
     note: 'Отдельная программа обработки под детские ткани и размеры.',
     photo: '/photo/hero-detskie.jpg',
+    photoMobile: '/photo/hero-detskie-m.jpg',
     alt: 'Сотрудница «Блеска» отдаёт ребёнку чистые детские вещи на приёмном пункте',
   },
   {
@@ -163,6 +170,7 @@ export const heroSlides: readonly HeroSlide[] = [
     accent: ['без запаха', 'и следов'],
     note: 'Убираем запахи и бережно ухаживаем за тканями вещей питомцев.',
     photo: '/photo/hero-pitomcy.jpg',
+    photoMobile: '/photo/hero-pitomcy-m.jpg',
     alt: 'Хозяин с собакой на приёмном пункте «Блеска», сотрудница оформляет плед в чистку',
   },
   {
@@ -172,6 +180,7 @@ export const heroSlides: readonly HeroSlide[] = [
     accent: ['для ресторанов', 'и отелей'],
     note: 'Индивидуальные решения для бизнеса: объём, график и условия обсуждаются отдельно.',
     photo: '/photo/hero-korp.jpg',
+    photoMobile: '/photo/hero-korp-m.jpg',
     alt: 'Технолог «Блеска» проверяет партию форменных пиджаков на конвейере цеха',
   },
 ]
