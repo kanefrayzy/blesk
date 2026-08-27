@@ -9,10 +9,16 @@ import { Cabinet } from '@/components/sections/Cabinet'
 import { Production } from '@/components/sections/Production'
 import { Clients } from '@/components/sections/Clients'
 import { Contacts } from '@/components/sections/Contacts'
+import { schema } from '@/lib/seo'
 
 export default function Page() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, '\\u003c') }}
+      />
+
       <SkipLink />
       <FloatingNav />
       <MobileNav />

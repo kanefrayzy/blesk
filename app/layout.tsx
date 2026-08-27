@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { TikTok_Sans } from 'next/font/google'
+import { OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from '@/lib/seo'
 import './globals.css'
 
 /** TikTok Sans — фирменная гарнитура брендбука, по решению заказчика одна на всю страницу. */
@@ -11,16 +12,49 @@ const tiktok = TikTok_Sans({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://bleskvip.ru'),
-  title: 'Блеск — профессиональная химчистка в Жуковском',
-  description:
-    'Собственное производство в Жуковском на Энергетической: цех 100+ м², итальянское оборудование, 15+ лет опыта и контроль качества под одной крышей.',
-  icons: { icon: '/brand/favicon.svg' },
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_TITLE, template: `%s — ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  alternates: { canonical: '/' },
   openGraph: {
-    title: 'Блеск — профессиональная химчистка в Жуковском',
-    description: 'Собственный цех 100+ м² в Жуковском. Вашу вещь никуда не увозят.',
-    locale: 'ru_RU',
     type: 'website',
+    locale: 'ru_RU',
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: 'Химчистка «Блеск» — профессиональный уход за вещами в Жуковском',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  // Коды подтверждения приходят из панелей вебмастера, поэтому берутся из
+  // окружения: без переменной тег просто не выводится.
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
+    yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION,
   },
 }
 

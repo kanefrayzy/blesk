@@ -16,16 +16,19 @@ const Shade = () => (
 )
 
 function Caption({ index, big }: { index: number; big: boolean }) {
+  // Десктопная лента — визуальный дубль мобильной стопки, поэтому её
+  // подписи не заголовки: иначе в документе восемь h3 вместо четырёх.
+  const Name = big ? 'p' : 'h3'
   return (
     <div className={`relative mt-auto w-full ${big ? 'p-10' : 'p-6'}`}>
       <span className="font-display text-[0.75rem] leading-none font-extrabold tracking-[0.2em] text-teal tabular-nums">
         {String(index + 1).padStart(2, '0')}
       </span>
-      <h3
+      <Name
         className={`h2 mt-3 text-white ${big ? 'text-[clamp(1.25rem,2.2vw,1.875rem)]' : 'text-[1.25rem]'}`}
       >
         {production[index].name}
-      </h3>
+      </Name>
       <p className="mt-2 max-w-[42ch] text-[0.9375rem] leading-snug text-white/75">
         {production[index].note}
       </p>
@@ -118,7 +121,7 @@ export function Production() {
       {/* ------------------------------------- телефон: карточки стопкой */}
       <div className="px-5 py-14 lg:hidden">
         <h2 id="prod-title" className="h2 text-[1.5rem] text-navy">
-          Наше производство
+          Наше производство в Жуковском
         </h2>
 
         {/* Кремовое кольцо отделяет края карточек в стопке */}
@@ -149,7 +152,7 @@ export function Production() {
           <div className="mx-auto flex w-full max-w-[1280px] flex-wrap items-end justify-between gap-4 px-8">
             {/* Заголовок объявлен в мобильной раскладке; здесь визуальный дубль */}
             <p className="h2 text-[clamp(1.5rem,2.6vw,2rem)] text-navy" aria-hidden="true">
-              Наше производство
+              Наше производство в Жуковском
             </p>
 
             <div className="flex items-center gap-4">
