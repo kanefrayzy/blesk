@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { TikTok_Sans } from 'next/font/google'
+import { CookieNotice } from '@/components/layout/CookieNotice'
 import { OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from '@/lib/seo'
 import './globals.css'
 
@@ -66,7 +67,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={tiktok.variable}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <CookieNotice />
+      </body>
     </html>
   )
 }
