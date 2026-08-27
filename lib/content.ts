@@ -123,7 +123,7 @@ export const heroSlides: readonly HeroSlide[] = [
   {
     key: 'odezhda',
     label: 'Одежда',
-    title: ['Профессиональный', 'уход за вещами'],
+    title: ['Химчистка', 'в Жуковском'],
     accent: ['для дома, семьи', 'и бизнеса'],
     note: 'Премиальная химчистка с вниманием к деталям. Чистота, которой можно доверять.',
     photo: '/photo/hero-odezhda.jpg',
