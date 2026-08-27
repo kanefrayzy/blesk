@@ -1,0 +1,55 @@
+# зависимости
+node_modules
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/versions
+
+# сборка
+.next
+out
+build
+next-env.d.ts
+*.tsbuildinfo
+
+# окружение и ключи
+.env
+.env.*
+!.env.example
+*.pem
+
+# логи
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# деплой и кэши
+.vercel
+.turbo
+.cache
+coverage
+
+# локальные настройки инструментов
+.claude/settings.local.json
+.claude/skills
+.impeccable
+
+# рабочий архив генераций: в сборку не входит, версии ведёт git
+assets-archive
+
+# редакторы
+.idea
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+
+# система
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
