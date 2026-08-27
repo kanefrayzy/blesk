@@ -21,42 +21,42 @@ export const metadata: Metadata = {
 const PHOTO_ALT = 'Уведомление «Блеска» о готовом заказе на экране телефона'
 
 /**
- * Кадр в двух версиях. На десктопе панель вертикальная, на телефоне это
- * короткая полоса во всю ширину: общий кадр там сжимается, и уведомление
- * на экране телефона перестаёт читаться. Мобильная версия — крупный кроп
- * вокруг самого телефона. Источник выбирает браузер, грузится ровно один.
+ * Кадр в двух кропах. Полоса под фотографию на десктопе шире мобильной почти
+ * вдвое, и один кадр не годится обоим: на телефоне уведомление на экране
+ * съёживается до нечитаемого. Мобильный кроп плотнее — только сам телефон.
+ * Источник выбирает браузер, грузится ровно один.
  */
 function PhotoSources() {
   const {
-    props: { srcSet: tall },
+    props: { srcSet: wide },
   } = getImageProps({
     alt: PHOTO_ALT,
     src: '/photo/cabinet-push.jpg',
-    width: 1696,
-    height: 2528,
+    width: 1180,
+    height: 694,
     sizes: '47vw',
-    quality: 90,
+    quality: 88,
   })
   const {
-    props: { srcSet: wide, ...rest },
+    props: { srcSet: tight, ...rest },
   } = getImageProps({
     alt: PHOTO_ALT,
     src: '/photo/cabinet-push-m.jpg',
-    width: 1200,
-    height: 833,
+    width: 1152,
+    height: 800,
     sizes: '100vw',
     quality: 82,
   })
 
   return (
     <picture>
-      <source media="(min-width: 1024px)" srcSet={tall} sizes="47vw" />
-      <source srcSet={wide} sizes="100vw" />
+      <source media="(min-width: 1024px)" srcSet={wide} sizes="47vw" />
+      <source srcSet={tight} sizes="100vw" />
       <img
         {...rest}
         loading="eager"
         fetchPriority="high"
-        className="absolute inset-0 h-full w-full object-cover object-center lg:object-[55%_46%]"
+        className="absolute inset-0 h-full w-full object-cover object-center"
       />
     </picture>
   )
