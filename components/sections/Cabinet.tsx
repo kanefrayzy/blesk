@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { Container } from '@/components/ui/Container'
 import { PendingBadge } from '@/components/ui/PendingBadge'
+import { IconArrow } from '@/components/ui/Icons'
 import { pending } from '@/lib/content'
 
 export function Cabinet() {
@@ -18,6 +19,14 @@ export function Cabinet() {
           <p className="mt-6 max-w-[44ch] text-[0.9375rem] leading-relaxed text-white/70">
             От приёма до выдачи: отслеживайте статус заказа и храните историю в личном кабинете.
           </p>
+
+          <a
+            href="/vhod"
+            className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-teal px-6 font-display text-[0.875rem] font-bold text-white shadow-[0_10px_28px_rgba(17,184,194,0.24)] transition-[background-color,transform,box-shadow] duration-200 hover:bg-teal-hi hover:shadow-[0_12px_34px_rgba(17,184,194,0.34)] active:scale-[0.97]"
+          >
+            Войти в кабинет
+            <IconArrow className="h-4 w-4" />
+          </a>
 
           <p className="mt-7 max-w-[46ch] rounded-lg border border-dashed border-white/25 px-4 py-3 text-[0.8125rem] leading-snug text-white/60">
             <PendingBadge tone="dark">Заглушка</PendingBadge>
