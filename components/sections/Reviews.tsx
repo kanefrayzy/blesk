@@ -2,14 +2,13 @@
 
 import { useState } from 'react'
 import { CircleButton } from '@/components/ui/CircleButton'
-import { IconChevron, IconStar } from '@/components/ui/Icons'
-import { demoReviews } from '@/lib/content'
+import { IconArrow, IconChevron, IconStar } from '@/components/ui/Icons'
+import { reviews, reviewsSource } from '@/lib/content'
 
-/** Содержимое демонстрационное — см. предупреждение над demoReviews. */
 export function Reviews() {
   const [i, setI] = useState(0)
-  const r = demoReviews[i]
-  const go = (d: 1 | -1) => setI((n) => (n + d + demoReviews.length) % demoReviews.length)
+  const r = reviews[i]
+  const go = (d: 1 | -1) => setI((n) => (n + d + reviews.length) % reviews.length)
 
   return (
     <div className="flex flex-col rounded-xl bg-white px-7 py-8">
@@ -22,10 +21,13 @@ export function Reviews() {
       </p>
 
       <blockquote className="mt-4 grow text-[0.875rem] leading-relaxed text-slate">
-        <p aria-live="polite">{r.text}</p>
+        {/* Высота под самый длинный отзыв: иначе карточка прыгает при листании. */}
+        <p aria-live="polite" className="lg:min-h-[8.75rem]">
+          {r.text}
+        </p>
         <footer className="mt-4 text-[0.8125rem] font-semibold text-navy">
           {r.name}
-          <span className="ml-2 font-normal text-slate-soft">{r.role}</span>
+          <span className="ml-2 font-normal text-slate-soft">{r.date}</span>
         </footer>
       </blockquote>
 
@@ -37,9 +39,20 @@ export function Reviews() {
           <IconChevron className="h-4 w-4" />
         </CircleButton>
         <span className="ml-1 text-[0.75rem] text-slate-soft">
-          {i + 1} / {demoReviews.length}
+          {i + 1} / {reviews.length}
         </span>
       </div>
+
+      <a
+        href={reviewsSource.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-6 inline-flex items-center gap-1.5 border-t border-line pt-5 text-[0.8125rem] text-slate-soft transition-colors duration-200 hover:text-teal"
+      >
+        <span className="font-semibold text-navy tabular-nums">{reviewsSource.rating}</span>
+        <span>на Яндекс Картах, {reviewsSource.count} отзыва</span>
+        <IconArrow className="h-4 w-4 text-teal" />
+      </a>
     </div>
   )
 }
