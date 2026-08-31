@@ -7,13 +7,11 @@ import Image from 'next/image'
 export function PostCover({
   url,
   alt,
-  rubric,
   sizes,
   priority = false,
 }: {
   url: string | null
   alt: string | null
-  rubric: string
   sizes: string
   priority?: boolean
 }) {
@@ -31,7 +29,7 @@ export function PostCover({
   }
 
   return (
-    <div className="absolute inset-0 flex items-end bg-navy p-5">
+    <div className="absolute inset-0 bg-navy">
       <Image
         src="/brand/mark-white.svg"
         alt=""
@@ -40,7 +38,6 @@ export function PostCover({
         height={64}
         className="absolute -right-6 -bottom-8 h-40 w-40 opacity-[0.07]"
       />
-      <span className="label relative text-white/60">{rubric}</span>
     </div>
   )
 }

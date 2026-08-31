@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { FeaturedPost } from '@/components/blog/FeaturedPost'
 import { PostCard } from '@/components/blog/PostCard'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -25,20 +24,8 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function BlogPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ rubric?: string }>
-}) {
-  const { rubric } = await searchParams
-
-  // Материалов пока десятки, поэтому берём их одним запросом и фильтруем на
-  // месте: так список рубрик собирается из того, что действительно написано,
-  // и пустых фильтров не показывается. Когда счёт пойдёт на сотни — вернуться.
-  const all = await getPosts()
-  const rubrics = [...new Map(all.map((p) => [p.rubric, p.rubric_label])).entries()]
-  const active = rubrics.some(([value]) => value === rubric) ? rubric : undefined
-  const posts = active ? all.filter((p) => p.rubric === active) : all
+export default async function BlogPage() {
+  const posts = await getPosts()
 
   return (
     <>
@@ -61,20 +48,6 @@ export default async function BlogPage({
 
         <section className="bg-cream">
           <Container className="py-12 lg:py-16">
-            {rubrics.length > 1 && (
-              <nav aria-label="Рубрики" className="mb-10 flex flex-wrap gap-2">
-                <RubricLink href="/blog" label="Все" active={!active} />
-                {rubrics.map(([value, label]) => (
-                  <RubricLink
-                    key={value}
-                    href={`/blog?rubric=${value}`}
-                    label={label}
-                    active={active === value}
-                  />
-                ))}
-              </nav>
-            )}
-
             {posts.length > 0 ? (
               <>
                 <FeaturedPost post={posts[0]} />
@@ -98,21 +71,5 @@ export default async function BlogPage({
 
       <SiteFooter />
     </>
-  )
-}
-
-function RubricLink({ href, label, active }: { href: string; label: string; active: boolean }) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? 'true' : undefined}
-      className={`rounded-full px-4 py-2 font-display text-[0.8125rem] font-bold transition-colors duration-200 ${
-        active
-          ? 'bg-navy text-white'
-          : 'bg-white text-navy hover:bg-navy/[0.06]'
-      }`}
-    >
-      {label}
-    </Link>
   )
 }

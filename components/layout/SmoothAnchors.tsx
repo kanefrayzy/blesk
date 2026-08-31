@@ -5,27 +5,31 @@ import { useEffect } from 'react'
 /**
  * Плавная прокрутка к разделам своей же страницы.
  *
- * Раньше это делал `scroll-behavior: smooth` на html — и ломал переходы между
- * страницами: маршрутизатор Next после навигации перебирает узлы новой
- * страницы и подтягивает их в видимую область, а плавная анимация успевала
- * доехать до последнего из них. С блога на главную страница уезжала к подвалу.
+ * Плавность убрана из `scroll-behavior` документа: она ломала переходы между
+ * страницами. Маршрутизатор Next после навигации подтягивает узлы новой
+ * страницы в видимую область, и анимация успевала доехать до последнего из
+ * них — с блога на главную страницу уносило к подвалу.
  *
- * Поэтому документ прокручивается мгновенно, а плавность включается здесь и
- * только для ссылок вида `#uslugi` и `/#uslugi`, ведущих в текущую страницу.
+ * Слушаем на погружении: Link пропускает свой обработчик, если событие уже
+ * отменено, — иначе маршрутизатор перехватит клик первым и прокрутит к якорю
+ * мгновенно, он делает это намеренно.
  */
 export function SmoothAnchors() {
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey) return
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return
+      }
 
       const link = (event.target as Element | null)?.closest?.('a')
-      if (!link) return
+      if (!link || link.hasAttribute('download') || link.target === '_blank') return
 
       const href = link.getAttribute('href') ?? ''
+      const path = window.location.pathname
       const hash = href.startsWith('#')
         ? href
-        : href.startsWith(`${window.location.pathname}#`)
-          ? href.slice(window.location.pathname.length)
+        : href.startsWith(`${path}#`)
+          ? href.slice(path.length)
           : ''
       if (hash.length < 2) return
 
@@ -38,8 +42,8 @@ export function SmoothAnchors() {
       window.history.replaceState(null, '', hash)
     }
 
-    document.addEventListener('click', onClick)
-    return () => document.removeEventListener('click', onClick)
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
   }, [])
 
   return null

@@ -11,21 +11,17 @@ export function FeaturedPost({ post }: { post: PostSummary }) {
         <PostCover
           url={post.cover_url}
           alt={post.cover_alt}
-          rubric={post.rubric_label}
           sizes="(min-width: 1024px) 50vw, 92vw"
           priority
         />
       </div>
 
       <div className="flex flex-col justify-center p-7 lg:p-10">
-        <p className="flex items-center gap-2 text-[0.75rem] text-slate-soft">
-          <span className="rounded-full bg-teal/10 px-2.5 py-1 font-display font-bold text-teal">
-            {post.rubric_label}
-          </span>
-          {post.published_at && (
+        {post.published_at && (
+          <p className="text-[0.75rem] text-slate-soft">
             <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
-          )}
-        </p>
+          </p>
+        )}
 
         <h2 className="h2 mt-5 max-w-[22ch] text-[clamp(1.25rem,2vw,1.75rem)] text-navy">
           <Link href={`/blog/${post.slug}`} className="after:absolute after:inset-0">

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Posts\Schemas;
 
 use App\Enums\Rubric;
 use App\Models\Post;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -11,7 +12,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Str;
 
 class PostForm
@@ -57,7 +61,16 @@ class PostForm
                             ->helperText('Две-три строки для карточки в списке и для описания в поиске.')
                             ->required()
                             ->rows(3)
-                            ->maxLength(400),
+                            ->maxLength(400)
+                            ->hintAction(
+                                Action::make('excerptFromBody')
+                                    ->label('Собрать из текста')
+                                    ->icon(Heroicon::OutlinedSparkles)
+                                    ->color('gray')
+                                    ->action(function (Get $get, Set $set): void {
+                                        $set('excerpt', self::openingOf((string) $get('body')));
+                                    }),
+                            ),
 
                         RichEditor::make('body')
                             ->label('Текст')
@@ -103,5 +116,37 @@ class PostForm
                     ])
                     ->columns(1),
             ]);
+    }
+
+    /**
+     * Начало статьи как заготовка анонса: снимаем разметку и режем по концу
+     * предложения, а не по символу — обрубок посреди слова редактор всё равно
+     * будет переписывать. Это заготовка, а не готовый текст.
+     *
+     * Публичный: на нём есть тест, и он может пригодиться другим формам.
+     */
+    public static function openingOf(string $html): string
+    {
+        $plain = strip_tags(str_replace(['</p>', '<br>', '<br/>', '<br />', '</li>'], ' ', $html));
+        $text = trim((string) preg_replace('/\s+/u', ' ', html_entity_decode($plain)));
+
+        if ($text === '' || mb_strlen($text) <= 300) {
+            return $text;
+        }
+
+        $cut = mb_substr($text, 0, 300);
+        $stops = array_filter([
+            mb_strrpos($cut, '. '),
+            mb_strrpos($cut, '! '),
+            mb_strrpos($cut, '? '),
+        ], fn ($position): bool => $position !== false);
+
+        if ($stops !== [] && max($stops) > 80) {
+            return mb_substr($cut, 0, max($stops) + 1);
+        }
+
+        $space = mb_strrpos($cut, ' ');
+
+        return rtrim($space === false ? $cut : mb_substr($cut, 0, $space)).'…';
     }
 }

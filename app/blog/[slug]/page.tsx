@@ -93,8 +93,6 @@ export default async function PostPage({ params }: Params) {
               <Link href="/blog" className="transition-colors hover:text-teal">
                 Новости и статьи
               </Link>
-              <span className="mx-2">/</span>
-              <span className="text-white/70">{post.rubric_label}</span>
             </nav>
 
             <h1 className="h2 mt-5 max-w-[24ch] text-[clamp(1.75rem,3.6vw,2.75rem)] text-white">
@@ -121,8 +119,7 @@ export default async function PostPage({ params }: Params) {
                   <PostCover
                     url={post.cover_url}
                     alt={post.cover_alt}
-                    rubric={post.rubric_label}
-                    sizes="(min-width: 1024px) 46rem, 92vw"
+                              sizes="(min-width: 1024px) 46rem, 92vw"
                     priority
                   />
                 </div>

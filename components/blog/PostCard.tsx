@@ -10,21 +10,17 @@ export function PostCard({ post, priority = false }: { post: PostSummary; priori
         <PostCover
           url={post.cover_url}
           alt={post.cover_alt}
-          rubric={post.rubric_label}
           sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 92vw"
           priority={priority}
         />
       </div>
 
       <div className="flex grow flex-col p-6">
-        <p className="flex items-center gap-2 text-[0.75rem] text-slate-soft">
-          <span className="rounded-full bg-teal/10 px-2.5 py-1 font-display font-bold text-teal">
-            {post.rubric_label}
-          </span>
-          {post.published_at && (
+        {post.published_at && (
+          <p className="text-[0.75rem] text-slate-soft">
             <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
-          )}
-        </p>
+          </p>
+        )}
 
         <h3 className="h2 mt-4 text-[1.0625rem] text-navy">
           {/* Ссылка растягивается на карточку: кликать можно куда угодно. */}
