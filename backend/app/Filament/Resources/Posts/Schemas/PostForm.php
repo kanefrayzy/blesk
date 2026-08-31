@@ -83,6 +83,9 @@ class PostForm
                     ->schema([
                         FileUpload::make('cover_path')
                             ->label('Изображение')
+                            // Диск указан явно: обложки всегда в публичном,
+                            // а FILESYSTEM_DISK может быть настроен иначе.
+                            ->disk('public')
                             ->image()
                             ->imageEditor()
                             ->directory('posts')
