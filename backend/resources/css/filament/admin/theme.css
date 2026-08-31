@@ -1,0 +1,113 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/*
+   Панель под брендбук «Блеска»: тёмная навигация глубокого морского,
+   Nordic Azure на активном разделе, светлое рабочее поле цвета жемчужной
+   кости — как полосы на сайте.
+*/
+@theme {
+    --blesk-navy: #0e1a35;
+    --blesk-navy-2: #16264a;
+    --blesk-teal: #14a4af;
+    --blesk-cream: #f7f5f0;
+    --blesk-line: #e2e5ea;
+}
+
+/* --------------------------------------------------- верхняя полоса */
+
+.fi-topbar {
+    background-color: var(--blesk-navy);
+    --tw-ring-color: transparent;
+    box-shadow: none;
+}
+
+.fi-topbar .fi-icon-btn,
+.fi-topbar .fi-icon {
+    color: rgb(255 255 255 / 0.75);
+}
+
+.fi-topbar .fi-icon-btn:hover {
+    background-color: rgb(255 255 255 / 0.08);
+}
+
+.fi-topbar .fi-global-search-field .fi-input-wrp {
+    background-color: rgb(255 255 255 / 0.08);
+    --tw-ring-color: rgb(255 255 255 / 0.14);
+}
+
+.fi-topbar .fi-global-search-field input {
+    color: #ffffff;
+}
+
+.fi-topbar .fi-global-search-field input::placeholder {
+    color: rgb(255 255 255 / 0.5);
+}
+
+/* --------------------------------------------------- боковое меню */
+
+.fi-sidebar {
+    background-color: var(--blesk-navy);
+}
+
+.fi-sidebar .fi-sidebar-header {
+    background-color: var(--blesk-navy);
+    box-shadow: none;
+}
+
+.fi-sidebar-item-label {
+    color: rgb(255 255 255 / 0.72);
+    font-weight: 500;
+}
+
+.fi-sidebar-item-btn .fi-icon {
+    color: rgb(255 255 255 / 0.5);
+}
+
+.fi-sidebar-item-btn:hover {
+    background-color: rgb(255 255 255 / 0.07);
+}
+
+.fi-sidebar-item-btn:hover .fi-sidebar-item-label,
+.fi-sidebar-item-btn:hover .fi-icon {
+    color: #ffffff;
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-btn {
+    background-color: var(--blesk-teal);
+}
+
+.fi-sidebar-item.fi-active .fi-sidebar-item-label,
+.fi-sidebar-item.fi-active .fi-sidebar-item-btn .fi-icon {
+    color: #ffffff;
+}
+
+.fi-sidebar-group-label {
+    color: rgb(255 255 255 / 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.6875rem;
+}
+
+/* --------------------------------------------------- рабочее поле */
+
+.fi-body {
+    background-color: var(--blesk-cream);
+}
+
+.fi-main-ctn {
+    background-color: var(--blesk-cream);
+}
+
+.fi-header-heading {
+    letter-spacing: -0.015em;
+}
+
+/* Заголовки и кнопки — фирменной гарнитурой, как на сайте. */
+.fi-header-heading,
+.fi-section-header-heading,
+.fi-btn {
+    font-family: 'TikTok Sans', system-ui, sans-serif;
+}

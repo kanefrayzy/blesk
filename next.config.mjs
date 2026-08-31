@@ -11,6 +11,12 @@ const nextConfig = {
     // запрос к оптимизатору отдаёт 400. Кадр первого экрана — плотная
     // фотография с мелкой фактурой, на 75 она замыливается.
     qualities: [75, 90],
+
+    // Обложки материалов лежат в хранилище админки, а не в public.
+    remotePatterns: [
+      { protocol: 'https', hostname: 'bleskvip.ru', pathname: '/storage/**' },
+      { protocol: 'http', hostname: '127.0.0.1', pathname: '/storage/**' },
+    ],
   },
 
   async headers() {

@@ -31,11 +31,16 @@ export const org = {
     'https://yandex.ru/map-widget/v1/?ll=38.114940%2C55.601529&z=17&mode=search&oid=1044852336&ol=biz',
 } as const
 
+/**
+ * Разделы меню. Адреса полные, а не якоря: то же меню стоит на страницах
+ * блога, где якоря главной никуда не ведут.
+ */
 export const nav = [
-  { href: '#uslugi', label: 'Услуги' },
-  { href: '#kak-rabotaet', label: 'Как это работает' },
-  { href: '#proizvodstvo', label: 'О нас' },
-  { href: '#biznes', label: 'Для бизнеса' },
+  { href: '/#uslugi', label: 'Услуги' },
+  { href: '/#kak-rabotaet', label: 'Как это работает' },
+  { href: '/#proizvodstvo', label: 'О нас' },
+  { href: '/#biznes', label: 'Для бизнеса' },
+  { href: '/blog', label: 'Новости' },
 ] as const
 
 /** Три показателя из полосы под первым экраном. Иконки — файлы из public/icons. */
@@ -328,21 +333,30 @@ export const footerLinks = [
   {
     title: 'Услуги',
     items: [
-      'Одежда',
-      'Шубы и кожа',
-      'Домашний текстиль',
-      'Детские вещи',
-      'Вещи питомцев',
-      'Корпоративное обслуживание',
+      { label: 'Одежда', href: '/#uslugi' },
+      { label: 'Шубы и кожа', href: '/#uslugi' },
+      { label: 'Домашний текстиль', href: '/#uslugi' },
+      { label: 'Детские вещи', href: '/#uslugi' },
+      { label: 'Вещи питомцев', href: '/#uslugi' },
+      { label: 'Корпоративное обслуживание', href: '/#biznes' },
     ],
   },
   {
     title: 'Компания',
-    items: ['О нас', 'Производство', 'Качество', 'Контакты'],
+    items: [
+      { label: 'О нас', href: '/#proizvodstvo' },
+      { label: 'Производство', href: '/#proizvodstvo' },
+      { label: 'Новости и статьи', href: '/blog' },
+      { label: 'Контакты', href: '/#kontakty' },
+    ],
   },
   {
     title: 'Помощь',
-    items: ['Как это работает', 'Уход за вещами', 'Правила приёма'],
+    items: [
+      { label: 'Как это работает', href: '/#kak-rabotaet' },
+      { label: 'Личный кабинет', href: '/vhod' },
+      { label: 'Уход за вещами', href: '/blog' },
+    ],
   },
 ] as const
 

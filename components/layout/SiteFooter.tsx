@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 import { IconTelegram, IconVk } from '@/components/ui/Icons'
@@ -29,13 +30,13 @@ export function SiteFooter() {
               <p className="label text-white/45">{col.title}</p>
               <ul className="mt-4 space-y-2.5">
                 {col.items.map((it) => (
-                  <li key={it}>
-                    <a
-                      href="#uslugi"
+                  <li key={it.label}>
+                    <Link
+                      href={it.href}
                       className="text-[0.8125rem] text-white/75 transition-colors hover:text-teal"
                     >
-                      {it}
-                    </a>
+                      {it.label}
+                    </Link>
                   </li>
                 ))}
               </ul>

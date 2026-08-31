@@ -43,7 +43,8 @@ export function NavLinks({ className = '' }: { className?: string }) {
   }, [place])
 
   useEffect(() => {
-    const ids = nav.map((n) => n.href.slice(1))
+    // У раздела новостей якоря нет — на главной он просто никогда не активен.
+    const ids = nav.map((n) => n.href.split('#')[1] ?? '')
     const els = ids.map((id) => document.getElementById(id)).filter((e): e is HTMLElement => !!e)
     if (!els.length) return
 
