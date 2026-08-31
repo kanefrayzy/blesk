@@ -29,14 +29,14 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('admin')
+            ->path(config('panel.path'))
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->brandName('Блеск')
-            ->brandLogo(asset('brand/logo-h-white.svg'))
-            ->darkModeBrandLogo(asset('brand/logo-h-white.svg'))
+            ->brandLogo(asset('panel-brand/logo-h-white.svg'))
+            ->darkModeBrandLogo(asset('panel-brand/logo-h-white.svg'))
             ->brandLogoHeight('2.1rem')
-            ->favicon(asset('brand/icon.svg'))
+            ->favicon(asset('panel-brand/icon.svg'))
             ->font('TikTok Sans')
             ->colors([
                 'primary' => Color::hex('#14A4AF'),
