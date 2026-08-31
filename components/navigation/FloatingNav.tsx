@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { NavLinks } from '@/components/navigation/NavLinks'
 import { CabinetLink } from '@/components/navigation/CabinetLink'
@@ -59,6 +60,24 @@ export function FloatingNav() {
     frame.current = now.current === goal.current ? 0 : requestAnimationFrame(tick)
   }, [paint])
 
+  /**
+   * Полоса есть только на главной, поэтому метка здесь работает как «наверх».
+   * Ссылка при этом настоящая: средний клик, клавиатура и «открыть в новой
+   * вкладке» должны вести на главную, а обычный клик перерисовывать страницу
+   * незачем — прокручиваем и убираем якорь из адреса.
+   */
+  const toTop = useCallback((event: React.MouseEvent) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    if (window.location.pathname !== '/') return
+
+    event.preventDefault()
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' })
+    if (window.location.hash) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+  }, [])
+
   useLayoutEffect(() => {
     now.current = goal.current = Math.min(1, Math.max(0, (window.scrollY - START) / (END - START)))
     paint()
@@ -87,14 +106,23 @@ export function FloatingNav() {
         ref={skin}
         className="flex items-center gap-3 rounded-full bg-white/72 py-1.5 pr-1.5 pl-3 text-navy backdrop-blur-[10px]"
       >
-        <Image
-          src="/brand/mark-navy.svg"
-          alt=""
-          aria-hidden="true"
-          width={64}
-          height={64}
-          className="h-7 w-7 shrink-0"
-        />
+        {/* Отрицательное поле гасит внутреннее: метка остаётся 28 px,
+            а нажимать можно по 44 px, как велит минимальный размер цели. */}
+        <Link
+          href="/"
+          onClick={toTop}
+          aria-label="Блеск — наверх"
+          className="-m-2 shrink-0 rounded-full p-2 transition-transform duration-200 active:scale-95"
+        >
+          <Image
+            src="/brand/mark-navy.svg"
+            alt=""
+            aria-hidden="true"
+            width={64}
+            height={64}
+            className="h-7 w-7"
+          />
+        </Link>
 
         <NavLinks className="hidden xl:flex" />
 
