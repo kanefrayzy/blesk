@@ -1,3 +1,5 @@
+const apiOrigin = process.env.BLESK_API_URL ? new URL(process.env.BLESK_API_URL) : null
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Сборка под свой сервер: .next/standalone запускается без node_modules.
@@ -12,10 +14,26 @@ const nextConfig = {
     // фотография с мелкой фактурой, на 75 она замыливается.
     qualities: [75, 90],
 
-    // Обложки материалов лежат в хранилище админки, а не в public.
+    // Обложки материалов лежат в хранилище админки, а не в public. Источник
+    // выводим из адреса API: на бою это домен сайта, на машине разработчика —
+    // локальный порт, и порт правилу нужен явно, иначе оно не совпадёт.
+    // Оптимизатор Next 16 не ходит на приватные адреса — это защита от SSRF.
+    // На машине разработчика бэкенд живёт как раз на 127.0.0.1, поэтому
+    // послабление включается переменной и только там; на сервере её нет.
+    dangerouslyAllowLocalIP: process.env.BLESK_ALLOW_LOCAL_IMAGES === '1',
+
     remotePatterns: [
       { protocol: 'https', hostname: 'bleskvip.ru', pathname: '/storage/**' },
-      { protocol: 'http', hostname: '127.0.0.1', pathname: '/storage/**' },
+      ...(apiOrigin
+        ? [
+            {
+              protocol: apiOrigin.protocol.replace(':', ''),
+              hostname: apiOrigin.hostname,
+              port: apiOrigin.port,
+              pathname: '/storage/**',
+            },
+          ]
+        : []),
     ],
   },
 

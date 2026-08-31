@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { TikTok_Sans } from 'next/font/google'
 import { CookieNotice } from '@/components/layout/CookieNotice'
+import { SmoothAnchors } from '@/components/layout/SmoothAnchors'
 import { OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from '@/lib/seo'
 import './globals.css'
 
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ru" className={tiktok.variable}>
       <body>
         {children}
+        <SmoothAnchors />
         <CookieNotice />
       </body>
     </html>

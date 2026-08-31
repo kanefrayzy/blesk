@@ -1,4 +1,5 @@
 'use client'
+import Link from 'next/link'
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { nav } from '@/lib/content'
@@ -85,7 +86,7 @@ export function NavLinks({ className = '' }: { className?: string }) {
       />
 
       {nav.map((n, i) => (
-        <a
+        <Link
           key={n.href}
           href={n.href}
           ref={(el) => {
@@ -99,7 +100,7 @@ export function NavLinks({ className = '' }: { className?: string }) {
           className="relative rounded-full px-3.5 py-2.5 text-[0.875rem] leading-none font-bold transition-transform duration-200 active:scale-95"
         >
           {n.label}
-        </a>
+        </Link>
       ))}
     </nav>
   )

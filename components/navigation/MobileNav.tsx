@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { CabinetLink } from '@/components/navigation/CabinetLink'
 import { nav } from '@/lib/content'
@@ -97,14 +98,14 @@ export function MobileNav() {
             <div className="min-h-0 overflow-hidden">
               <nav aria-label="Разделы" className="border-t border-navy/10 px-3 pt-2 pb-3">
                 {nav.map((n) => (
-                  <a
+                  <Link
                     key={n.href}
                     href={n.href}
                     onClick={() => setOpen(false)}
                     className="block rounded-2xl px-3 py-3.5 text-[0.9375rem] font-bold text-navy transition-colors duration-200 active:bg-navy/8"
                   >
                     {n.label}
-                  </a>
+                  </Link>
                 ))}
 
                 <CabinetLink className="mt-2 px-5 py-3.5" onClick={() => setOpen(false)} />

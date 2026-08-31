@@ -1,6 +1,7 @@
 import { Container } from '@/components/ui/Container'
 import { CabinetMock } from '@/components/sections/CabinetMock'
 import { IconArrow } from '@/components/ui/Icons'
+import Link from 'next/link'
 
 export function Cabinet() {
   return (
@@ -19,13 +20,13 @@ export function Cabinet() {
             заказов и рекомендации по уходу — с компьютера и с телефона.
           </p>
 
-          <a
+          <Link
             href="/vhod"
             className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-teal px-6 font-display text-[0.875rem] font-bold text-white shadow-[0_10px_28px_rgba(17,184,194,0.24)] transition-[background-color,transform,box-shadow] duration-200 hover:bg-teal-hi hover:shadow-[0_12px_34px_rgba(17,184,194,0.34)] active:scale-[0.97]"
           >
             Войти в кабинет
             <IconArrow className="h-4 w-4" />
-          </a>
+          </Link>
 
           <p className="mt-6 max-w-[44ch] text-[0.75rem] leading-relaxed text-white/45">
             Интерфейс показан макетом: кабинет заработает, когда его подключат к системе учёта

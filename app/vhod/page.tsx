@@ -4,6 +4,7 @@ import { AuthForm } from '@/components/auth/AuthForm'
 import { IconArrow, IconCheck } from '@/components/ui/Icons'
 import { cabinetFeatures } from '@/lib/content'
 import { SITE_URL } from '@/lib/seo'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Личный кабинет',
@@ -81,7 +82,7 @@ export default function Page() {
             className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-navy to-transparent"
           />
 
-          <a
+          <Link
             href="/"
             aria-label="Блеск — на главную"
             className="absolute top-6 left-6 lg:top-8 lg:left-12"
@@ -93,7 +94,7 @@ export default function Page() {
               height={482}
               className="h-9 w-auto lg:h-11"
             />
-          </a>
+          </Link>
         </div>
 
         <div className="relative flex flex-1 flex-col px-6 pt-8 pb-10 lg:px-12 lg:pt-10 lg:pb-14">
@@ -134,13 +135,13 @@ export default function Page() {
       <section className="flex flex-col items-center justify-center bg-white px-5 py-14 lg:px-12">
         <AuthForm />
 
-        <a
+        <Link
           href="/"
           className="mt-10 inline-flex items-center gap-2 text-[0.8125rem] font-semibold text-slate transition-colors hover:text-teal lg:hidden"
         >
           <IconArrow className="h-4 w-4 rotate-180" />
           На главную
-        </a>
+        </Link>
       </section>
     </main>
   )
