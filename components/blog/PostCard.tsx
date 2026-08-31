@@ -5,7 +5,7 @@ import { formatDate, minutesLabel, type PostSummary } from '@/lib/blog'
 
 export function PostCard({ post, priority = false }: { post: PostSummary; priority?: boolean }) {
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-white transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(14,26,53,0.10)]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(14,26,53,0.10)]">
       <div className="relative aspect-[16/10] overflow-hidden bg-mist">
         <PostCover
           url={post.cover_url}

@@ -35,11 +35,17 @@ export default async function BlogPage() {
       <main id="main">
         <section className="bg-navy">
           <Container className="pt-12 pb-16 lg:pt-16 lg:pb-20">
-            <p className="label text-teal">Блеск</p>
-            <h1 className="h1 mt-4 max-w-[18ch] text-[clamp(2rem,4.4vw,3.25rem)] text-white">
+            <p className="label rise-in text-teal">Блеск</p>
+            <h1
+              className="h1 rise-in mt-4 max-w-[18ch] text-[clamp(2rem,4.4vw,3.25rem)] text-white"
+              style={{ animationDelay: '60ms' }}
+            >
               Новости и статьи
             </h1>
-            <p className="mt-6 max-w-[52ch] text-[0.9375rem] leading-relaxed text-white/70">
+            <p
+              className="rise-in mt-6 max-w-[52ch] text-[0.9375rem] leading-relaxed text-white/70"
+              style={{ animationDelay: '120ms' }}
+            >
               Что происходит в химчистке и что полезно знать о вещах: как их хранить, чем
               выводить пятна и чего не стоит делать дома.
             </p>
@@ -50,12 +56,22 @@ export default async function BlogPage() {
           <Container className="py-12 lg:py-16">
             {posts.length > 0 ? (
               <>
-                <FeaturedPost post={posts[0]} />
+                {/* Лесенка: карточки проявляются одна за другой, шаг 70 мс.
+                    Дальше пятой ждать нечего — они всё равно за экраном. */}
+                <div className="rise-in" style={{ animationDelay: '180ms' }}>
+                  <FeaturedPost post={posts[0]} />
+                </div>
 
                 {posts.length > 1 && (
                   <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {posts.slice(1).map((post, i) => (
-                      <PostCard key={post.slug} post={post} priority={i < 2} />
+                      <div
+                        key={post.slug}
+                        className="rise-in h-full"
+                        style={{ animationDelay: `${250 + Math.min(i, 4) * 70}ms` }}
+                      >
+                        <PostCard post={post} priority={i < 2} />
+                      </div>
                     ))}
                   </div>
                 )}

@@ -89,17 +89,23 @@ export default async function PostPage({ params }: Params) {
       <main id="main">
         <section className="bg-navy">
           <Container className="pt-10 pb-14 lg:pt-14 lg:pb-16">
-            <nav aria-label="Хлебные крошки" className="text-[0.75rem] text-white/50">
+            <nav aria-label="Хлебные крошки" className="rise-in text-[0.75rem] text-white/50">
               <Link href="/blog" className="transition-colors hover:text-teal">
                 Новости и статьи
               </Link>
             </nav>
 
-            <h1 className="h2 mt-5 max-w-[24ch] text-[clamp(1.75rem,3.6vw,2.75rem)] text-white">
+            <h1
+              className="h2 rise-in mt-5 max-w-[24ch] text-[clamp(1.75rem,3.6vw,2.75rem)] text-white"
+              style={{ animationDelay: '60ms' }}
+            >
               {post.title}
             </h1>
 
-            <p className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.8125rem] text-white/55">
+            <p
+              className="rise-in mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.8125rem] text-white/55"
+              style={{ animationDelay: '120ms' }}
+            >
               {post.published_at && (
                 <time dateTime={post.published_at}>{formatDate(post.published_at)}</time>
               )}
@@ -111,7 +117,7 @@ export default async function PostPage({ params }: Params) {
 
         <section className="bg-white">
           <Container className="py-12 lg:py-16">
-            <div className="mx-auto max-w-[46rem]">
+            <div className="rise-in mx-auto max-w-[46rem]" style={{ animationDelay: '180ms' }}>
               {/* Без обложки фирменная плашка здесь только заняла бы экран:
                   тёмная шапка выше уже даёт материалу картинку. */}
               {post.cover_url && (
