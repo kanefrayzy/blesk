@@ -1,5 +1,6 @@
 import { Container } from '@/components/ui/Container'
 import { IconArrow } from '@/components/ui/Icons'
+import { TrackedPhoneLink } from '@/components/metrics/TrackedPhoneLink'
 import { org, demoClients } from '@/lib/content'
 
 /** Марки клиентов демонстрационные — см. предупреждение над demoClients. */
@@ -28,12 +29,12 @@ export function Clients() {
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
-            <a
+            <TrackedPhoneLink
               href={org.phones[0].href}
               className="inline-flex h-12 items-center rounded-full bg-teal px-6 font-display text-[0.875rem] font-bold text-white shadow-[0_10px_28px_rgba(17,184,194,0.24)] transition-[background-color,transform,box-shadow] duration-200 hover:bg-teal-hi hover:shadow-[0_12px_34px_rgba(17,184,194,0.34)] active:scale-[0.97]"
             >
               {org.phones[0].display}
-            </a>
+            </TrackedPhoneLink>
             <a
               href={`mailto:${org.email}`}
               className="inline-flex h-12 items-center gap-2 rounded-full border border-white/35 px-6 font-display text-[0.875rem] font-bold text-white transition-[background-color,border-color,transform] duration-200 hover:border-white hover:bg-white/10 active:scale-[0.97]"

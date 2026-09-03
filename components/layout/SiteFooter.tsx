@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 import { IconTelegram, IconVk } from '@/components/ui/Icons'
+import { TrackedPhoneLink } from '@/components/metrics/TrackedPhoneLink'
 import { org, footerLinks } from '@/lib/content'
 
 export function SiteFooter() {
@@ -46,13 +47,13 @@ export function SiteFooter() {
 
         <div className="lg:text-right">
           {org.phones.map((p) => (
-            <a
+            <TrackedPhoneLink
               key={p.href}
               href={p.href}
               className="block font-display text-[1.0625rem] font-bold text-white tabular-nums transition-colors hover:text-teal"
             >
               {p.display}
-            </a>
+            </TrackedPhoneLink>
           ))}
           <a
             href={`mailto:${org.email}`}
@@ -73,10 +74,9 @@ export function SiteFooter() {
             </span>
           </div>
 
-          {/* Это ссылка на карту: без nativeButton Base UI ждёт настоящий button. */}
           <Button
             nativeButton={false}
-            render={<a href={org.routeUrl} target="_blank" rel="noopener noreferrer" />}
+            render={<a href="/#zapis" />}
             className="mt-6 h-11 rounded-full px-6 text-[0.8125rem] tracking-wide uppercase hover:bg-teal-hi"
           >
             Заказать онлайн
@@ -85,8 +85,22 @@ export function SiteFooter() {
       </Container>
 
       <div className="border-t border-white/10">
-        <Container>
-          <p className="py-5 text-[0.75rem] text-white/40">© Химчистка «Блеск». {org.site}</p>
+        <Container className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[0.75rem] text-white/40">© Химчистка «Блеск». {org.site}</p>
+          <div className="flex flex-col gap-2 text-[0.75rem] sm:flex-row sm:gap-5">
+            <Link
+              href="/politika-obrabotki-personalnyh-dannyh"
+              className="text-white/50 transition-colors hover:text-white"
+            >
+              Политика обработки данных
+            </Link>
+            <Link
+              href="/soglasie-na-obrabotku-personalnyh-dannyh"
+              className="text-white/50 transition-colors hover:text-white"
+            >
+              Согласие на обработку данных
+            </Link>
+          </div>
         </Container>
       </div>
     </footer>

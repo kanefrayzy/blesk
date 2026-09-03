@@ -5,6 +5,7 @@ import { MobileNav } from '@/components/navigation/MobileNav'
 import { Hero } from '@/components/hero/Hero'
 import { Stats } from '@/components/sections/Stats'
 import { Services } from '@/components/sections/Services'
+import { OnlineOrder } from '@/components/sections/OnlineOrder'
 import { Cabinet } from '@/components/sections/Cabinet'
 import { Production } from '@/components/sections/Production'
 import { Clients } from '@/components/sections/Clients'
@@ -27,6 +28,7 @@ export default function Page() {
         <Hero />
         <Stats />
         <Services />
+        <OnlineOrder />
         <Cabinet />
         <Production />
         <Clients />

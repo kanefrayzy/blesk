@@ -3,6 +3,7 @@
 import { useId, useState } from 'react'
 import { IconArrow, IconCheck } from '@/components/ui/Icons'
 import { PendingBadge } from '@/components/ui/PendingBadge'
+import { TrackedPhoneLink } from '@/components/metrics/TrackedPhoneLink'
 import { org, pending } from '@/lib/content'
 
 type Mode = 'login' | 'register'
@@ -246,22 +247,22 @@ export function AuthForm() {
               Кабинет ещё не подключён к системе учёта, поэтому введённое никуда не отправлено и
               нигде не сохранено. Статус заказа сейчас подскажут по телефону.
             </p>
-            <a
+            <TrackedPhoneLink
               href={org.phones[0].href}
               className="mt-3 inline-flex items-center gap-1.5 font-display text-[0.875rem] font-bold text-teal"
             >
               {org.phones[0].display}
               <IconArrow className="h-4 w-4" />
-            </a>
+            </TrackedPhoneLink>
           </div>
         )}
       </form>
 
       <p className="mt-8 border-t border-line pt-6 text-[0.8125rem] leading-relaxed text-slate">
         Нужен статус заказа прямо сейчас? Позвоните{' '}
-        <a href={org.phones[0].href} className="font-semibold text-teal">
+        <TrackedPhoneLink href={org.phones[0].href} className="font-semibold text-teal">
           {org.phones[0].display}
-        </a>{' '}
+        </TrackedPhoneLink>{' '}
         или напишите на{' '}
         <a href={`mailto:${org.email}`} className="font-semibold text-teal">
           {org.email}

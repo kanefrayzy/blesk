@@ -1,8 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 const KEY = 'blesk:cookie-notice'
+const CONSENT_EVENT = 'blesk:analytics-consent'
 
 /**
  * Уведомление о cookie.
@@ -37,6 +39,7 @@ export function CookieNotice() {
     } catch {
       // не сохранилось — плашка вернётся в следующий раз, это не поломка
     }
+    window.dispatchEvent(new Event(CONSENT_EVENT))
     setLeaving(true)
     window.setTimeout(() => setShow(false), 260)
   }
@@ -54,7 +57,13 @@ export function CookieNotice() {
     >
       <div className="flex flex-col gap-4 rounded-2xl bg-navy/95 px-5 py-4 shadow-[0_18px_44px_rgba(5,12,30,0.45)] ring-1 ring-white/12 backdrop-blur-[10px] sm:flex-row sm:items-center sm:gap-5 sm:px-6">
         <p className="text-[0.8125rem] leading-relaxed text-white/75">
-          Мы используем файлы cookie. Продолжая пользоваться сайтом, вы соглашаетесь с этим.
+          Мы используем файлы cookie для работы сайта и оценки эффективности рекламы.{' '}
+          <Link
+            href="/politika-obrabotki-personalnyh-dannyh"
+            className="text-white underline underline-offset-2"
+          >
+            Подробнее
+          </Link>
         </p>
 
         <button

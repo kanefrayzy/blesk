@@ -37,6 +37,17 @@ const nextConfig = {
     ],
   },
 
+  async rewrites() {
+    if (!apiOrigin) return []
+
+    return [
+      {
+        source: '/api/v1/order-requests',
+        destination: `${apiOrigin.origin}/api/v1/order-requests`,
+      },
+    ]
+  },
+
   async headers() {
     return [
       {

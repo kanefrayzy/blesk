@@ -8,7 +8,7 @@ import { HeroShapes } from '@/components/hero/HeroShapes'
 import { HeroSlides } from '@/components/hero/HeroSlides'
 import { OrderCard } from '@/components/hero/OrderCard'
 import { useHeroCarousel } from '@/components/hero/useHeroCarousel'
-import { org, heroSlides } from '@/lib/content'
+import { heroSlides } from '@/lib/content'
 
 const CTA =
   'inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full px-5 font-display text-[clamp(0.6875rem,0.89vw,0.9375rem)] font-extrabold tracking-wide uppercase transition-[background-color,border-color,transform,box-shadow] duration-200 active:scale-[0.97] lg:h-[3.7vw] lg:px-[calc(2vw_-_7px)]'
@@ -88,9 +88,7 @@ export function Hero() {
                 кнопок вылезала на бежевую полосу. */}
             <div className="mt-6 flex flex-wrap items-center gap-3 lg:mt-[3.2vw] lg:gap-[calc(1.49vw_-_4px)]">
               <a
-                href={org.routeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                href="#zapis"
                 className={`${CTA} gap-2 bg-teal text-white shadow-[0_8px_20px_rgba(17,184,194,0.22)] hover:bg-teal-hi hover:shadow-[0_10px_26px_rgba(17,184,194,0.32)]`}
               >
                 Заказать онлайн

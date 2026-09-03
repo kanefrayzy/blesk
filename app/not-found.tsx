@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { IconArrow } from '@/components/ui/Icons'
 import { org } from '@/lib/content'
+import { TrackedPhoneLink } from '@/components/metrics/TrackedPhoneLink'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
@@ -37,12 +38,12 @@ export default function NotFound() {
           На главную
           <IconArrow className="h-4 w-4" />
         </Link>
-        <a
+        <TrackedPhoneLink
           href={org.phones[0].href}
           className="inline-flex h-12 items-center rounded-full border border-white/35 px-6 font-display text-[0.875rem] font-bold text-white transition-[background-color,border-color,transform] duration-200 hover:border-white hover:bg-white/10 active:scale-[0.97]"
         >
           {org.phones[0].display}
-        </a>
+        </TrackedPhoneLink>
       </div>
     </main>
   )
