@@ -44,8 +44,7 @@ function LoginPhoto() {
   return (
     <picture>
       <source media="(min-width: 1280px)" srcSet={desktop} sizes="46vw" />
-      <source srcSet={mobile} sizes="100vw" />
-      <img {...imageProps} fetchPriority="high" className="absolute inset-0 h-full w-full object-cover object-center" />
+      <img {...imageProps} srcSet={mobile} fetchPriority="high" className="absolute inset-0 h-full w-full object-cover object-center" />
     </picture>
   )
 }

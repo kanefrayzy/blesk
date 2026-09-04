@@ -6,7 +6,7 @@ import { production } from '@/lib/content'
 
 const N = production.length
 const PANEL = 85 // svh прокрутки на одну панель закреплённой ленты
-const EDGE = 'max(1.25rem,calc((100vw-1280px)/2+2rem))'
+const EDGE = 'max(1.25rem, calc((100vw - 1280px) / 2 + 2rem))'
 
 const Shade = () => (
   <div

@@ -397,7 +397,7 @@ export function OrderForm({ initialContact }: OrderFormProps = {}) {
         )}
       </div>
 
-      <label className="absolute -left-[10000px]" aria-hidden="true">
+      <label className="absolute -left-[10000px]">
         Сайт
         <input
           name="website"

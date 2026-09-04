@@ -14,11 +14,11 @@ export function Reviews() {
     <div className="flex flex-col rounded-xl bg-white px-7 py-8">
       <h3 className="h2 text-[1.0625rem] text-navy">Отзывы клиентов</h3>
 
-      <p className="mt-4 flex gap-1" aria-label={`Оценка ${r.rating} из 5`}>
+      <div role="img" className="mt-4 flex gap-1" aria-label={`Оценка ${r.rating} из 5`}>
         {Array.from({ length: 5 }, (_, n) => (
           <IconStar key={n} className={`h-4 w-4 ${n < r.rating ? 'text-[#f0a500]' : 'text-line'}`} />
         ))}
-      </p>
+      </div>
 
       <blockquote className="mt-4 grow text-[0.875rem] leading-relaxed text-slate">
         {/* Высота под самый длинный отзыв: иначе карточка прыгает при листании. */}

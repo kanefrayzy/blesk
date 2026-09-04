@@ -70,9 +70,9 @@ function SlidePhoto({
   return (
     <picture>
       <source media="(min-width: 1024px)" srcSet={wide} sizes={WIDE.sizes} />
-      <source srcSet={tall} sizes={TALL.sizes} />
       <img
         {...rest}
+        srcSet={tall}
         draggable={false}
         loading={eager ? 'eager' : 'lazy'}
         fetchPriority={eager ? 'high' : 'auto'}
