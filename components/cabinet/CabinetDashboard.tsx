@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import {
   Bell,
+  CalendarPlus,
   Camera,
   Check,
   ChevronDown,
@@ -172,48 +173,49 @@ function ItemCard({ item, orderId, index }: { item: OrderItem; orderId: string; 
 
 function CurrentOrder({ order }: { order: Order }) {
   const ready = order.status.code === 'ready'
+  const progress = [
+    { label: 'Принят', done: true },
+    { label: 'В работе', done: true },
+    { label: 'Готов', done: ready },
+  ]
+
   return (
-    <article className="overflow-hidden rounded-[2rem] bg-navy text-white shadow-[0_18px_60px_rgba(14,26,53,.10)]">
+    <article className="overflow-hidden rounded-[1.75rem] bg-navy text-white shadow-[0_18px_60px_rgba(14,26,53,.12)] sm:rounded-[2rem]">
       <div className="grid lg:grid-cols-[1.2fr_.8fr]">
         <div className="p-5 sm:p-8 lg:p-10">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="label text-teal">Текущий заказ · № {order.number}</p>
             <StatusPill status={order.status} />
           </div>
-          <h2 className="mt-7 max-w-[18ch] font-display text-[clamp(1.8rem,4vw,3.2rem)] leading-[1.02] font-bold tracking-[-.04em]">
+          <h2 className="mt-6 max-w-[18ch] font-display text-[1.75rem] leading-[1.04] font-bold tracking-[-.04em] sm:mt-7 sm:text-[2.5rem] lg:text-[3.2rem]">
             {ready ? 'Можно забирать вещи' : 'Мы заботимся о ваших вещах'}
           </h2>
-          <div className="mt-8 grid gap-5 sm:grid-cols-3">
+          <div className="mt-7 grid grid-cols-2 gap-x-4 gap-y-5 sm:mt-8 sm:grid-cols-3">
             <div><p className="text-[0.6875rem] text-white/42">Приняли</p><p className="mt-1 text-[0.875rem] font-semibold">{order.created_at || '—'}</p></div>
-            <div><p className="text-[0.6875rem] text-white/42">Плановая готовность</p><p className="mt-1 text-[0.875rem] font-semibold">{order.ready_at || 'Уточняется'}</p></div>
-            <div><p className="text-[0.6875rem] text-white/42">Сумма заказа</p><p className="mt-1 text-[0.875rem] font-semibold">{money(order.amount)}</p></div>
+            <div><p className="text-[0.6875rem] text-white/42">Готовность</p><p className="mt-1 text-[0.875rem] font-semibold">{order.ready_at || 'Уточняется'}</p></div>
+            <div className="col-span-2 sm:col-span-1"><p className="text-[0.6875rem] text-white/42">Сумма заказа</p><p className="mt-1 text-[0.875rem] font-semibold">{money(order.amount)}</p></div>
           </div>
         </div>
         <div className="border-t border-white/10 bg-white/[.045] p-5 sm:p-8 lg:border-t-0 lg:border-l lg:p-10">
           <p className="label text-white/45">Путь заказа</p>
-          <div className="mt-6 space-y-0">
-            {[
-              ['Заказ принят', true],
-              ['Вещи в работе', true],
-              ['Готово к выдаче', ready],
-            ].map(([label, done], index) => (
-              <div key={String(label)} className="flex gap-3">
-                <div className="flex flex-col items-center">
-                  <span className={`flex h-6 w-6 items-center justify-center rounded-full border ${done ? 'border-teal bg-teal text-white' : 'border-white/20 text-transparent'}`}>{done && <Check className="h-3.5 w-3.5" />}</span>
-                  {index < 2 && <span className={`h-9 w-px ${done ? 'bg-teal' : 'bg-white/15'}`} />}
-                </div>
-                <p className={`pt-0.5 text-[0.8125rem] ${done ? 'font-semibold text-white' : 'text-white/38'}`}>{label}</p>
+          <div className="relative mt-6 grid grid-cols-3">
+            <span aria-hidden className="absolute top-3 right-[16.66%] left-[16.66%] h-px bg-white/15" />
+            <span aria-hidden className={`absolute top-3 left-[16.66%] h-px bg-teal transition-all ${ready ? 'right-[16.66%]' : 'right-1/2'}`} />
+            {progress.map(({ label, done }) => (
+              <div key={label} className="relative flex flex-col items-center text-center">
+                <span className={`z-10 flex h-6 w-6 items-center justify-center rounded-full border ${done ? 'border-teal bg-teal text-white' : 'border-white/20 bg-navy text-transparent'}`}>{done && <Check className="h-3.5 w-3.5" />}</span>
+                <p className={`mt-2 text-[0.6875rem] ${done ? 'font-semibold text-white' : 'text-white/38'}`}>{label}</p>
               </div>
             ))}
           </div>
-          <div className="mt-7 flex gap-3 rounded-2xl border border-white/10 p-4">
+          <div className="mt-6 flex gap-3 rounded-2xl border border-white/10 bg-white/[.025] p-4">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-teal" />
             <div><p className="text-[0.6875rem] text-white/40">Пункт выдачи</p><p className="mt-1 text-[0.8125rem] font-semibold">ул. Энергетическая, 9</p></div>
           </div>
         </div>
       </div>
 
-      <div className="border-t border-white/10 bg-cream p-4 text-navy sm:p-6 lg:p-8">
+      <div className="border-t border-white/10 bg-cream p-3 text-navy sm:p-6 lg:p-8">
         <div className="mb-4 flex items-center justify-between gap-4">
           <div><p className="label text-teal">Изделия в заказе</p><p className="mt-1 text-[0.8125rem] text-slate">{order.items.length} {order.items.length === 1 ? 'позиция' : 'позиции'}</p></div>
           <span className="rounded-full bg-white px-3 py-1.5 text-[0.6875rem] font-semibold text-slate">Данные AGBIS</span>
@@ -354,41 +356,65 @@ export function CabinetDashboard() {
   const nav = [
     { id: 'orders' as const, label: 'Мои заказы', icon: Package },
     { id: 'history' as const, label: 'История', icon: History },
-    { id: 'settings' as const, label: 'Настройки', icon: Settings },
+    { id: 'settings' as const, label: 'Профиль', icon: Settings },
   ]
 
+  function selectView(nextView: View) {
+    setView(nextView)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
-    <main className="min-h-svh bg-cream lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+    <main className="min-h-svh bg-[#f4f3ef] lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
       <aside className="hidden min-h-svh flex-col bg-navy px-6 py-8 text-white lg:sticky lg:top-0 lg:flex lg:h-svh">
         <Link href="/" aria-label="Блеск — на главную"><Image src="/brand/logo-h-white.svg" alt="Блеск" width={1701} height={482} className="h-9 w-auto" priority /></Link>
         <nav className="mt-16 grid gap-2">
-          {nav.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => setView(id)} className={`flex h-12 items-center gap-3 rounded-xl px-4 text-left text-[0.8125rem] font-semibold transition ${view === id ? 'bg-white text-navy' : 'text-white/55 hover:bg-white/6 hover:text-white'}`}><Icon className={`h-4 w-4 ${view === id ? 'text-teal' : ''}`} />{label}</button>)}
+          {nav.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => selectView(id)} className={`flex h-12 items-center gap-3 rounded-xl px-4 text-left text-[0.8125rem] font-semibold transition ${view === id ? 'bg-white text-navy' : 'text-white/55 hover:bg-white/6 hover:text-white'}`}><Icon className={`h-4 w-4 ${view === id ? 'text-teal' : ''}`} />{label}</button>)}
         </nav>
         <div className="mt-auto rounded-2xl border border-white/10 p-4"><p className="text-[0.6875rem] text-white/35">Нужна помощь?</p><a href="tel:+79166959179" className="mt-1 block text-[0.8125rem] font-semibold">+7 (916) 695-91-79</a><p className="mt-1 text-[0.6875rem] text-white/35">Ежедневно, 9:00–20:00</p></div>
         <button onClick={logout} className="mt-4 flex items-center gap-2 px-2 text-[0.75rem] font-semibold text-white/45 hover:text-white"><LogOut className="h-4 w-4" /> Выйти</button>
       </aside>
 
       <div className="min-w-0">
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-line/80 bg-cream/95 px-4 py-4 backdrop-blur sm:px-7 lg:px-10">
-          <Image src="/brand/logo-h-navy.svg" alt="Блеск" width={1701} height={482} className="h-7 w-auto lg:hidden" priority />
+        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line/70 bg-white/88 px-4 pt-[max(.75rem,env(safe-area-inset-top))] pb-3 shadow-[0_4px_24px_rgba(14,26,53,.035)] backdrop-blur-xl sm:px-7 lg:bg-[#f4f3ef]/95 lg:px-10 lg:py-4 lg:shadow-none">
+          <div className="flex items-center gap-3 lg:hidden">
+            <Link href="/" aria-label="Блеск — на главную"><Image src="/brand/logo-h-navy.svg" alt="Блеск" width={1701} height={482} className="h-7 w-auto" priority /></Link>
+            <span className="hidden h-5 w-px bg-line sm:block" />
+            <span className="hidden text-[0.75rem] font-medium text-slate sm:block">Личный кабинет</span>
+          </div>
           <div className="hidden lg:block"><p className="text-[0.75rem] text-slate-soft">Личный кабинет</p><p className="font-display text-[0.875rem] font-bold text-navy">{data.profile.phone}</p></div>
           <div className="flex items-center gap-2">
-            <button onClick={load} disabled={refreshing} aria-label="Обновить данные" className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-slate hover:text-teal"><RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /></button>
-            <button onClick={logout} aria-label="Выйти" className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-slate hover:text-navy lg:hidden"><LogOut className="h-4 w-4" /></button>
+            <button onClick={load} disabled={refreshing} aria-label="Обновить данные" className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-slate shadow-sm transition hover:text-teal"><RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /></button>
+            <button onClick={logout} aria-label="Выйти" className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-slate shadow-sm transition hover:text-navy lg:hidden"><LogOut className="h-4 w-4" /></button>
             <span className="hidden h-10 items-center rounded-full bg-white px-4 text-[0.75rem] font-semibold text-navy shadow-sm sm:flex">{greeting || 'Клиент «Блеска»'}</span>
           </div>
         </header>
 
-        <nav className="scrollbar-none flex gap-2 overflow-x-auto border-b border-line bg-white px-4 py-3 lg:hidden">
-          {nav.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => setView(id)} className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-[0.75rem] font-semibold ${view === id ? 'bg-navy text-white' : 'bg-mist text-slate'}`}><Icon className="h-3.5 w-3.5" />{label}</button>)}
-        </nav>
-
-        <div className="mx-auto max-w-[82rem] px-4 py-7 sm:px-7 sm:py-10 lg:px-10 lg:py-12">
+        <div className="mx-auto max-w-[82rem] px-3 pt-6 pb-[calc(7.5rem+env(safe-area-inset-bottom))] sm:px-7 sm:pt-9 lg:px-10 lg:py-12">
           {error && <div className="mb-6 rounded-xl border border-destructive/20 bg-white px-4 py-3 text-[0.8125rem] text-destructive">{error}</div>}
-          {view === 'orders' && <section><div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="label text-teal">Добрый день{greeting ? `, ${greeting}` : ''}</p><h1 className="mt-3 font-display text-3xl font-bold tracking-[-.035em] text-navy sm:text-5xl">Ваши заказы</h1></div><div className="flex items-center gap-2 text-[0.75rem] text-slate-soft"><Clock3 className="h-4 w-4 text-teal" /> Данные обновляются из AGBIS</div></div><div className="grid gap-6">{data.orders.length ? data.orders.map((order) => <CurrentOrder key={order.id} order={order} />) : <EmptyOrders />}</div></section>}
+          {view === 'orders' && <section><div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8"><div><p className="label text-teal">Добрый день{greeting ? `, ${greeting}` : ''}</p><h1 className="mt-2 font-display text-[2rem] font-bold tracking-[-.035em] text-navy sm:mt-3 sm:text-5xl">Ваши заказы</h1></div><div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[0.6875rem] text-slate-soft shadow-sm sm:text-[0.75rem]"><Clock3 className="h-3.5 w-3.5 text-teal sm:h-4 sm:w-4" /> Данные из AGBIS</div></div><div className="grid gap-6">{data.orders.length ? data.orders.map((order) => <CurrentOrder key={order.id} order={order} />) : <EmptyOrders />}</div></section>}
           {view === 'history' && <HistoryView orders={data.history} />}
           {view === 'settings' && <SettingsView dashboard={data} onSaved={(preferences) => setData({ ...data, preferences })} />}
         </div>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-[max(.75rem,env(safe-area-inset-bottom))] z-50 mx-auto w-[calc(100%-1.5rem)] max-w-[34rem] lg:hidden">
+        <nav aria-label="Навигация личного кабинета" className="grid grid-cols-4 items-center rounded-[1.6rem] border border-white/70 bg-white/92 px-2 py-2 shadow-[0_18px_50px_rgba(14,26,53,.22)] backdrop-blur-xl">
+          {nav.slice(0, 2).map(({ id, label, icon: Icon }) => (
+            <button key={id} onClick={() => selectView(id)} aria-current={view === id ? 'page' : undefined} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[0.625rem] font-semibold transition ${view === id ? 'bg-mist text-navy' : 'text-slate-soft'}`}>
+              <Icon className={`h-5 w-5 ${view === id ? 'text-teal' : ''}`} />
+              <span>{label === 'Мои заказы' ? 'Заказы' : label}</span>
+            </button>
+          ))}
+          <Link href="/#zapis" className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[0.625rem] font-semibold text-slate-soft">
+            <span className="-mt-5 flex h-11 w-11 items-center justify-center rounded-full bg-teal text-white shadow-[0_9px_24px_rgba(20,164,175,.34)] ring-4 ring-white"><CalendarPlus className="h-5 w-5" /></span>
+            <span>Записаться</span>
+          </Link>
+          <button onClick={() => selectView('settings')} aria-current={view === 'settings' ? 'page' : undefined} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[0.625rem] font-semibold transition ${view === 'settings' ? 'bg-mist text-navy' : 'text-slate-soft'}`}>
+            <Settings className={`h-5 w-5 ${view === 'settings' ? 'text-teal' : ''}`} />
+            <span>Профиль</span>
+          </button>
+        </nav>
       </div>
     </main>
   )

@@ -8,8 +8,8 @@ import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, LoaderCircle, LockKeyhole } 
 type Step = 'phone' | 'password'
 
 const field =
-  'h-13 w-full rounded-2xl border border-line bg-white px-4 text-[1rem] text-navy shadow-[0_1px_0_rgba(14,26,53,.02)] ' +
-  'placeholder:text-slate-soft/75 transition focus:border-teal focus:outline-none focus:ring-4 focus:ring-teal/10'
+  'h-14 w-full rounded-2xl border border-line bg-white px-4 text-[1rem] font-medium text-navy shadow-[0_4px_18px_rgba(14,26,53,.04)] ' +
+  'placeholder:font-normal placeholder:text-slate-soft/75 transition focus:border-teal focus:outline-none focus:ring-4 focus:ring-teal/10'
 
 function normalizePhone(value: string) {
   const digits = value.replace(/\D/g, '')
@@ -113,23 +113,22 @@ export function AuthForm() {
 
   return (
     <div className="w-full max-w-[29rem]">
-      <div className="mb-9 flex items-center justify-between">
+      <div className="mb-6 flex items-start justify-between sm:mb-8">
         <div>
-          <p className="label text-teal">Личный кабинет</p>
-          <h1 className="mt-3 font-display text-[clamp(2rem,5vw,3.1rem)] leading-[1.02] font-bold tracking-[-.035em] text-navy">
-            {step === 'phone' ? 'Рады вас видеть' : isNew ? 'Проверьте SMS' : 'Введите пароль'}
+          <p className="label text-teal">{step === 'phone' ? 'Вход' : 'Подтверждение'}</p>
+          <h1 className="mt-3 font-display text-[1.75rem] leading-[1.06] font-bold tracking-[-.035em] text-navy sm:text-[2.35rem] xl:text-[2.75rem]">
+            {step === 'phone' ? 'Войти по телефону' : isNew ? 'Проверьте SMS' : 'Введите пароль'}
           </h1>
         </div>
-        <div className="hidden h-12 w-12 items-center justify-center rounded-2xl bg-navy text-white sm:flex">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-cream text-teal sm:h-12 sm:w-12 xl:bg-navy xl:text-white">
           <LockKeyhole className="h-5 w-5" />
         </div>
       </div>
 
       {step === 'phone' ? (
         <form onSubmit={identify} noValidate>
-          <p className="mb-7 max-w-[38ch] text-[0.9375rem] leading-relaxed text-slate">
-            Введите телефон, указанный при оформлении заказа. Если кабинета ещё нет, AGBIS создаст
-            его и пришлёт код-пароль в SMS.
+          <p className="mb-6 max-w-[40ch] text-[0.875rem] leading-relaxed text-slate sm:text-[0.9375rem]">
+            Укажите номер, который оставляли при оформлении заказа. Если входите впервые — пришлём код в SMS.
           </p>
           <label htmlFor={`${uid}-phone`} className="label mb-2.5 block text-slate">Номер телефона</label>
           <input
@@ -143,7 +142,7 @@ export function AuthForm() {
             aria-invalid={Boolean(error) || undefined}
           />
 
-          <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl bg-cream px-4 py-3.5 text-[0.8125rem] leading-relaxed text-slate">
+          <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl bg-cream px-4 py-3.5 text-[0.75rem] leading-relaxed text-slate sm:mt-5 sm:text-[0.8125rem]">
             <input
               type="checkbox"
               checked={consent}
@@ -161,7 +160,7 @@ export function AuthForm() {
 
           {error && <p role="alert" className="mt-4 text-[0.8125rem] font-medium text-destructive">{error}</p>}
 
-          <button disabled={loading} className="mt-6 flex h-13 w-full items-center justify-center gap-2 rounded-full bg-teal px-6 font-display text-[0.9375rem] font-bold text-white shadow-[0_12px_34px_rgba(20,164,175,.24)] transition hover:bg-teal-hi disabled:opacity-60">
+          <button disabled={loading} className="mt-5 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-teal px-6 font-display text-[0.9375rem] font-bold text-white shadow-[0_12px_34px_rgba(20,164,175,.24)] transition hover:bg-teal-hi disabled:opacity-60 sm:mt-6">
             {loading ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <>Продолжить <ArrowRight className="h-4 w-4" /></>}
           </button>
         </form>
@@ -197,7 +196,7 @@ export function AuthForm() {
 
           {error && <p role="alert" className="mt-4 text-[0.8125rem] font-medium text-destructive">{error}</p>}
 
-          <button disabled={loading} className="mt-6 flex h-13 w-full items-center justify-center gap-2 rounded-full bg-teal px-6 font-display text-[0.9375rem] font-bold text-white shadow-[0_12px_34px_rgba(20,164,175,.24)] transition hover:bg-teal-hi disabled:opacity-60">
+          <button disabled={loading} className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-teal px-6 font-display text-[0.9375rem] font-bold text-white shadow-[0_12px_34px_rgba(20,164,175,.24)] transition hover:bg-teal-hi disabled:opacity-60">
             {loading ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <>Открыть кабинет <ArrowRight className="h-4 w-4" /></>}
           </button>
 
@@ -207,8 +206,8 @@ export function AuthForm() {
         </form>
       )}
 
-      <p className="mt-9 border-t border-line pt-6 text-[0.8125rem] leading-relaxed text-slate">
-        Нужна помощь? Позвоните нам: <a href="tel:+79166959179" className="font-semibold text-navy">+7 (916) 695-91-79</a>
+      <p className="mt-7 border-t border-line pt-5 text-center text-[0.75rem] leading-relaxed text-slate sm:mt-9 sm:pt-6 sm:text-left sm:text-[0.8125rem]">
+        Нужна помощь? <a href="tel:+79166959179" className="font-semibold text-navy">Позвоните нам: +7 (916) 695-91-79</a>
       </p>
     </div>
   )
