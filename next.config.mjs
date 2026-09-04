@@ -37,6 +37,20 @@ const nextConfig = {
     ],
   },
 
+  // Постоянные адреса для распространённых старых ссылок. Новые правила
+  // переноса страниц добавляются сюда же без потери поискового веса.
+  async redirects() {
+    return [
+      { source: '/login', destination: '/vhod', statusCode: 301 },
+      { source: '/cabinet', destination: '/lk', statusCode: 301 },
+      {
+        source: '/privacy-policy',
+        destination: '/politika-obrabotki-personalnyh-dannyh',
+        statusCode: 301,
+      },
+    ]
+  },
+
   async rewrites() {
     if (!apiOrigin) return []
 

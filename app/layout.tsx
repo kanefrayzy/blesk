@@ -53,11 +53,9 @@ export const metadata: Metadata = {
       'max-video-preview': -1,
     },
   },
-  // Коды подтверждения приходят из панелей вебмастера, поэтому берутся из
-  // окружения: без переменной тег просто не выводится.
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
-    yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION,
+    yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || '93e7ea2cce672caa',
   },
 }
 
