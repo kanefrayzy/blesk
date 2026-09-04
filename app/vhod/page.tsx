@@ -1,147 +1,58 @@
 import type { Metadata } from 'next'
-import Image, { getImageProps } from 'next/image'
-import { AuthForm } from '@/components/auth/AuthForm'
-import { IconArrow, IconCheck } from '@/components/ui/Icons'
-import { cabinetFeatures } from '@/lib/content'
-import { SITE_URL } from '@/lib/seo'
+import Image from 'next/image'
 import Link from 'next/link'
+import { BellRing, Camera, ChevronLeft, PackageCheck } from 'lucide-react'
+import { AuthForm } from '@/components/auth/AuthForm'
 
 export const metadata: Metadata = {
-  title: 'Личный кабинет',
-  description:
-    'Вход и регистрация в личном кабинете химчистки «Блеск»: история заказов, статус изделия, ' +
-    'стоимость, фотографии при приёмке и рекомендации по уходу.',
+  title: 'Вход в личный кабинет',
+  description: 'Вход в личный кабинет химчистки «Блеск» по номеру телефона.',
   alternates: { canonical: '/vhod' },
-  openGraph: {
-    url: `${SITE_URL}/vhod`,
-    title: 'Личный кабинет — Химчистка «Блеск»',
-    description: 'История заказов, статус изделия и рекомендации по уходу в одном месте.',
-  },
+  robots: { index: false, follow: false },
 }
 
-const PHOTO_ALT =
-  'Клиентка в машине с телефоном в руке: на экране уведомление «Блеска» о готовом заказе'
+const advantages = [
+  { icon: PackageCheck, title: 'Статус заказа', text: 'Понятно, в работе вещь или уже готова к выдаче.' },
+  { icon: Camera, title: 'Фото и детали', text: 'Состояние каждого изделия, загрязнения и отметки при приёмке.' },
+  { icon: BellRing, title: 'Уведомления', text: 'SMS от AGBIS, а также настройки push и почты внутри кабинета.' },
+]
 
-/**
- * Кадр в двух кропах. Полоса под фотографию на десктопе шире мобильной почти
- * вдвое, и один кадр не годится обоим: на телефоне уведомление на экране
- * съёживается до нечитаемого. Мобильный кроп плотнее — только сам телефон.
- * Источник выбирает браузер, грузится ровно один.
- */
-function PhotoSources() {
-  const {
-    props: { srcSet: wide },
-  } = getImageProps({
-    alt: PHOTO_ALT,
-    src: '/photo/cabinet-push.jpg',
-    width: 1180,
-    height: 694,
-    sizes: '47vw',
-    quality: 88,
-  })
-  const {
-    props: { srcSet: tight, ...rest },
-  } = getImageProps({
-    alt: PHOTO_ALT,
-    src: '/photo/cabinet-push-m.jpg',
-    width: 1152,
-    height: 800,
-    sizes: '100vw',
-    quality: 82,
-  })
-
+export default function LoginPage() {
   return (
-    <picture>
-      <source media="(min-width: 1024px)" srcSet={wide} sizes="47vw" />
-      <source srcSet={tight} sizes="100vw" />
-      <img
-        {...rest}
-        loading="eager"
-        fetchPriority="high"
-        className="absolute inset-0 h-full w-full object-cover object-center"
-      />
-    </picture>
-  )
-}
+    <main className="min-h-svh bg-cream lg:grid lg:grid-cols-[minmax(380px,.82fr)_minmax(520px,1.18fr)]">
+      <section className="relative hidden min-h-svh overflow-hidden bg-navy px-10 py-9 text-white lg:flex lg:flex-col xl:px-16 xl:py-12">
+        <div aria-hidden className="absolute top-0 right-0 h-72 w-72 translate-x-1/3 -translate-y-1/3 rounded-full border border-white/10" />
+        <div aria-hidden className="absolute top-10 right-10 h-40 w-40 rounded-full border border-teal/30" />
+        <Link href="/" className="relative inline-flex w-fit items-center gap-3" aria-label="На главную">
+          <Image src="/brand/logo-h-white.svg" alt="Блеск" width={1701} height={482} className="h-10 w-auto" priority />
+        </Link>
 
-export default function Page() {
-  return (
-    <main className="lg:grid lg:min-h-svh lg:grid-cols-[0.92fr_1fr]">
-      {/* ---------------------------------------- левая: смысл кабинета */}
-      <section className="relative flex flex-col bg-navy">
-        {/* Кадр занимает верх панели, а не лежит под текстом: уведомление на
-            экране телефона должно читаться, а не тонуть под списком. */}
-        <div className="relative h-[32svh] min-h-[210px] w-full shrink-0 lg:h-[40svh]">
-          <PhotoSources />
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-navy/70 to-transparent"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-navy to-transparent"
-          />
+        <div className="relative my-auto max-w-[33rem] py-14">
+          <p className="label text-teal">Всё о заказе — рядом</p>
+          <h2 className="mt-5 font-display text-[clamp(2.2rem,4.1vw,4.5rem)] leading-[.98] font-bold tracking-[-.045em]">Ваши вещи<br />под контролем</h2>
+          <p className="mt-6 max-w-[36ch] text-[1rem] leading-relaxed text-white/62">Один аккуратный кабинет вместо звонков: текущий заказ, отдельные позиции, фотографии и история обращений.</p>
 
-          <Link
-            href="/"
-            aria-label="Блеск — на главную"
-            className="absolute top-6 left-6 lg:top-8 lg:left-12"
-          >
-            <Image
-              src="/brand/logo-h-white.svg"
-              alt="Блеск — профессиональная химчистка"
-              width={1701}
-              height={482}
-              className="h-9 w-auto lg:h-11"
-            />
-          </Link>
-        </div>
-
-        <div className="relative flex flex-1 flex-col px-6 pt-8 pb-10 lg:px-12 lg:pt-10 lg:pb-14">
-          <div className="lg:mt-auto">
-            <p className="label text-teal">Личный кабинет</p>
-            <h1 className="h2 mt-4 max-w-[18ch] text-[clamp(1.5rem,2.6vw,2.125rem)] text-white">
-              Ваши вещи под полным цифровым контролем
-            </h1>
-
-            <ul className="mt-8 grid gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-1 lg:gap-y-3">
-              {cabinetFeatures.map((f) => (
-                <li key={f.name} className="flex gap-3">
-                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal/15">
-                    <IconCheck className="h-3 w-3 text-teal" />
-                  </span>
-                  <span className="min-w-0">
-                    <b className="font-display text-[0.9375rem] leading-tight font-semibold text-white">
-                      {f.name}
-                    </b>
-                    {'soon' in f && f.soon && (
-                      <span className="ml-2 rounded border border-dashed border-white/30 px-1.5 py-0.5 align-[0.15em] text-[0.5625rem] leading-none tracking-wider text-white/60 uppercase">
-                        В перспективе
-                      </span>
-                    )}
-                    <span className="mt-1 block text-[0.8125rem] leading-snug text-white/60">
-                      {f.note}
-                    </span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-
+          <div className="mt-12 grid gap-3">
+            {advantages.map(({ icon: Icon, title, text }, index) => (
+              <div key={title} className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[.045] p-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal/15 text-teal"><Icon className="h-5 w-5" /></span>
+                <div><p className="font-display text-[0.9375rem] font-bold">{title}</p><p className="mt-0.5 text-[0.8125rem] leading-snug text-white/52">{text}</p></div>
+                <span className="ml-auto text-[0.6875rem] font-semibold text-white/25">0{index + 1}</span>
+              </div>
+            ))}
           </div>
         </div>
+
+        <p className="relative text-[0.75rem] text-white/35">Химчистка «Блеск» · Жуковский</p>
       </section>
 
-      {/* ------------------------------------------------ правая: форма */}
-      <section className="flex flex-col items-center justify-center bg-white px-5 py-14 lg:px-12">
-        <AuthForm />
-
-        <Link
-          href="/"
-          className="mt-10 inline-flex items-center gap-2 text-[0.8125rem] font-semibold text-slate transition-colors hover:text-teal lg:hidden"
-        >
-          <IconArrow className="h-4 w-4 rotate-180" />
-          На главную
-        </Link>
+      <section className="flex min-h-svh flex-col bg-white">
+        <header className="flex items-center justify-between px-5 py-5 sm:px-9 lg:px-12">
+          <Link href="/" className="inline-flex items-center gap-2 text-[0.8125rem] font-semibold text-slate hover:text-navy"><ChevronLeft className="h-4 w-4" /> На сайт</Link>
+          <Image src="/brand/logo-h-navy.svg" alt="Блеск" width={1701} height={482} className="h-8 w-auto lg:hidden" priority />
+          <span className="hidden text-[0.75rem] text-slate-soft sm:block">Защищённый вход</span>
+        </header>
+        <div className="flex flex-1 items-center justify-center px-5 py-10 sm:px-10 lg:px-14"><AuthForm /></div>
       </section>
     </main>
   )

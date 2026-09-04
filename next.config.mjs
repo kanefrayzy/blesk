@@ -42,8 +42,8 @@ const nextConfig = {
 
     return [
       {
-        source: '/api/v1/order-requests',
-        destination: `${apiOrigin.origin}/api/v1/order-requests`,
+        source: '/api/v1/:path*',
+        destination: `${apiOrigin.origin}/api/v1/:path*`,
       },
     ]
   },

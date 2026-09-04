@@ -1,273 +1,214 @@
 'use client'
 
-import { useId, useState } from 'react'
-import { IconArrow, IconCheck } from '@/components/ui/Icons'
-import { PendingBadge } from '@/components/ui/PendingBadge'
-import { TrackedPhoneLink } from '@/components/metrics/TrackedPhoneLink'
-import { org, pending } from '@/lib/content'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { FormEvent, useEffect, useId, useState } from 'react'
+import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, LoaderCircle, LockKeyhole } from 'lucide-react'
 
-type Mode = 'login' | 'register'
-type Errors = Partial<Record<'name' | 'phone' | 'email' | 'password' | 'consent', string>>
-
-const digits = (v: string) => v.replace(/\D/g, '')
-const okPhone = (v: string) => /^[78]\d{10}$/.test(digits(v))
-const okEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim())
+type Step = 'phone' | 'password'
 
 const field =
-  'h-12 w-full rounded-xl border border-line bg-white px-4 text-[0.9375rem] text-navy ' +
-  'transition-[border-color,box-shadow] duration-200 placeholder:text-slate-soft ' +
-  'hover:border-slate-soft focus:border-teal focus:shadow-[0_0_0_3px_rgba(20,164,175,0.14)] focus:outline-none'
+  'h-13 w-full rounded-2xl border border-line bg-white px-4 text-[1rem] text-navy shadow-[0_1px_0_rgba(14,26,53,.02)] ' +
+  'placeholder:text-slate-soft/75 transition focus:border-teal focus:outline-none focus:ring-4 focus:ring-teal/10'
 
-/**
- * Вход и регистрация в личный кабинет.
- *
- * Форма не подключена: по стратегии кабинет живёт в АГБИС, а какие функции
- * доступны через его API — вопрос 15 к учредителю, ответа пока нет. Поэтому
- * проверка полей работает по-настоящему, а отправки нет, и об этом сказано
- * и до отправки, и после неё.
- */
+function normalizePhone(value: string) {
+  const digits = value.replace(/\D/g, '')
+  const local = digits.startsWith('8') ? `7${digits.slice(1)}` : digits.startsWith('7') ? digits : `7${digits}`
+  return `+${local.slice(0, 11)}`
+}
+
+function formatPhone(value: string) {
+  const digits = normalizePhone(value).replace(/\D/g, '').slice(1)
+  if (!digits) return '+7'
+  const parts = ['+7']
+  if (digits.length) parts.push(` (${digits.slice(0, 3)}`)
+  if (digits.length >= 3) parts.push(')')
+  if (digits.length > 3) parts.push(` ${digits.slice(3, 6)}`)
+  if (digits.length > 6) parts.push(`-${digits.slice(6, 8)}`)
+  if (digits.length > 8) parts.push(`-${digits.slice(8, 10)}`)
+  return parts.join('')
+}
+
+async function api(path: string, body?: unknown) {
+  const response = await fetch(`/api/v1/cabinet/${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+  const payload = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(payload.message || 'Что-то пошло не так. Попробуйте ещё раз.')
+  return payload
+}
+
 export function AuthForm() {
   const uid = useId()
-  const [mode, setMode] = useState<Mode>('login')
-  const [values, setValues] = useState({ name: '', phone: '', email: '', password: '' })
+  const router = useRouter()
+  const [step, setStep] = useState<Step>('phone')
+  const [phone, setPhone] = useState('+7')
+  const [password, setPassword] = useState('')
   const [consent, setConsent] = useState(false)
-  const [errors, setErrors] = useState<Errors>({})
-  const [sent, setSent] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [isNew, setIsNew] = useState(false)
+  const [notice, setNotice] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const set = (k: keyof typeof values) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValues((v) => ({ ...v, [k]: e.target.value }))
-    setErrors((x) => ({ ...x, [k]: undefined }))
-    setSent(false)
-  }
+  useEffect(() => {
+    fetch('/api/v1/cabinet/dashboard', { headers: { Accept: 'application/json' } }).then((response) => {
+      if (response.ok) router.replace('/lk')
+    })
+  }, [router])
 
-  const switchTo = (m: Mode) => {
-    setMode(m)
-    setErrors({})
-    setSent(false)
-  }
+  const validPhone = /^\+7\d{10}$/.test(normalizePhone(phone))
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const next: Errors = {}
-    if (!okPhone(values.phone)) next.phone = 'Введите номер телефона из 11 цифр'
-    if (values.password.length < 8) next.password = 'Не короче 8 символов'
-    if (mode === 'register') {
-      if (values.name.trim().length < 2) next.name = 'Как к вам обращаться?'
-      if (!okEmail(values.email)) next.email = 'Проверьте адрес почты'
-      if (!consent) next.consent = 'Без согласия мы не сможем завести кабинет'
+  async function identify(event: FormEvent) {
+    event.preventDefault()
+    setError('')
+    if (!validPhone) return setError('Введите российский номер телефона полностью.')
+    if (!consent) return setError('Подтвердите согласие на обработку персональных данных.')
+
+    setLoading(true)
+    try {
+      const result = await api('identify', { phone: normalizePhone(phone), consent })
+      setIsNew(Boolean(result.is_new))
+      setNotice(result.message)
+      setStep('password')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Не удалось проверить номер.')
+    } finally {
+      setLoading(false)
     }
-    setErrors(next)
-    if (Object.keys(next).length) return
-    // Отправлять некуда: бэкенда нет. Введённое остаётся в состоянии формы.
-    setSent(true)
   }
 
-  const err = (k: keyof Errors) =>
-    errors[k] ? (
-      <p id={`${uid}-${k}-err`} role="alert" className="mt-1.5 text-[0.8125rem] text-destructive">
-        {errors[k]}
-      </p>
-    ) : null
+  async function login(event: FormEvent) {
+    event.preventDefault()
+    setError('')
+    if (password.length < 4) return setError('Введите пароль или код из SMS.')
 
-  const aria = (k: keyof Errors) => ({
-    'aria-invalid': errors[k] ? true : undefined,
-    'aria-describedby': errors[k] ? `${uid}-${k}-err` : undefined,
-  })
+    setLoading(true)
+    try {
+      await api('login', { phone: normalizePhone(phone), password })
+      router.replace('/lk')
+      router.refresh()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Не удалось войти.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function remember() {
+    setError('')
+    setLoading(true)
+    try {
+      const result = await api('remember-password', { phone: normalizePhone(phone) })
+      setNotice(result.message)
+      setIsNew(true)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Не удалось отправить SMS.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="w-full max-w-[27rem]">
-      <p className="rounded-xl border border-dashed border-slate-soft/50 bg-mist/60 px-4 py-3 text-[0.8125rem] leading-snug text-slate">
-        <PendingBadge>Заглушка</PendingBadge>
-        Кабинет ещё не подключён к системе учёта заказов. Форма готова, но данные никуда не
-        отправляются.
-      </p>
-
-      <div
-        role="tablist"
-        aria-label="Вход или регистрация"
-        className="mt-7 grid grid-cols-2 gap-1 rounded-full bg-mist p-1"
-      >
-        {(
-          [
-            ['login', 'Вход'],
-            ['register', 'Регистрация'],
-          ] as const
-        ).map(([m, label]) => (
-          <button
-            key={m}
-            role="tab"
-            type="button"
-            id={`${uid}-tab-${m}`}
-            aria-selected={mode === m}
-            aria-controls={`${uid}-panel`}
-            onClick={() => switchTo(m)}
-            className={`h-10 rounded-full font-display text-[0.875rem] font-bold transition-[background-color,color,box-shadow] duration-200 ${
-              mode === m
-                ? 'bg-white text-navy shadow-[0_2px_8px_rgba(14,26,53,0.10)]'
-                : 'text-slate hover:text-navy'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+    <div className="w-full max-w-[29rem]">
+      <div className="mb-9 flex items-center justify-between">
+        <div>
+          <p className="label text-teal">Личный кабинет</p>
+          <h1 className="mt-3 font-display text-[clamp(2rem,5vw,3.1rem)] leading-[1.02] font-bold tracking-[-.035em] text-navy">
+            {step === 'phone' ? 'Рады вас видеть' : isNew ? 'Проверьте SMS' : 'Введите пароль'}
+          </h1>
+        </div>
+        <div className="hidden h-12 w-12 items-center justify-center rounded-2xl bg-navy text-white sm:flex">
+          <LockKeyhole className="h-5 w-5" />
+        </div>
       </div>
 
-      <form
-        id={`${uid}-panel`}
-        role="tabpanel"
-        aria-labelledby={`${uid}-tab-${mode}`}
-        onSubmit={submit}
-        noValidate
-        className="mt-7"
-      >
-        {mode === 'register' && (
-          <div className="mb-4">
-            <label htmlFor={`${uid}-name`} className="label mb-2 block text-slate">
-              Имя
-            </label>
-            <input
-              id={`${uid}-name`}
-              name="name"
-              autoComplete="name"
-              value={values.name}
-              onChange={set('name')}
-              placeholder="Как к вам обращаться"
-              className={field}
-              {...aria('name')}
-            />
-            {err('name')}
-          </div>
-        )}
-
-        <div className="mb-4">
-          <label htmlFor={`${uid}-phone`} className="label mb-2 block text-slate">
-            Телефон
-          </label>
+      {step === 'phone' ? (
+        <form onSubmit={identify} noValidate>
+          <p className="mb-7 max-w-[38ch] text-[0.9375rem] leading-relaxed text-slate">
+            Введите телефон, указанный при оформлении заказа. Если кабинета ещё нет, AGBIS создаст
+            его и пришлёт код-пароль в SMS.
+          </p>
+          <label htmlFor={`${uid}-phone`} className="label mb-2.5 block text-slate">Номер телефона</label>
           <input
             id={`${uid}-phone`}
-            name="phone"
             type="tel"
             inputMode="tel"
             autoComplete="tel"
-            value={values.phone}
-            onChange={set('phone')}
-            placeholder="+7 (900) 000-00-00"
+            value={phone}
+            onChange={(event) => { setPhone(formatPhone(event.target.value)); setError('') }}
             className={field}
-            {...aria('phone')}
+            aria-invalid={Boolean(error) || undefined}
           />
-          {err('phone')}
-        </div>
 
-        {mode === 'register' && (
-          <div className="mb-4">
-            <label htmlFor={`${uid}-email`} className="label mb-2 block text-slate">
-              Почта
-            </label>
+          <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-2xl bg-cream px-4 py-3.5 text-[0.8125rem] leading-relaxed text-slate">
             <input
-              id={`${uid}-email`}
-              name="email"
-              type="email"
-              inputMode="email"
-              autoComplete="email"
-              value={values.email}
-              onChange={set('email')}
-              placeholder="you@example.com"
-              className={field}
-              {...aria('email')}
+              type="checkbox"
+              checked={consent}
+              onChange={(event) => { setConsent(event.target.checked); setError('') }}
+              className="mt-0.5 h-4.5 w-4.5 shrink-0 accent-teal"
             />
-            {err('email')}
+            <span>
+              Я даю{' '}
+              <Link href="/soglasie-na-obrabotku-personalnyh-dannyh" target="_blank" className="font-semibold text-navy underline decoration-teal/50 underline-offset-3">
+                согласие на обработку персональных данных
+              </Link>{' '}
+              для регистрации, входа и работы личного кабинета.
+            </span>
+          </label>
+
+          {error && <p role="alert" className="mt-4 text-[0.8125rem] font-medium text-destructive">{error}</p>}
+
+          <button disabled={loading} className="mt-6 flex h-13 w-full items-center justify-center gap-2 rounded-full bg-teal px-6 font-display text-[0.9375rem] font-bold text-white shadow-[0_12px_34px_rgba(20,164,175,.24)] transition hover:bg-teal-hi disabled:opacity-60">
+            {loading ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <>Продолжить <ArrowRight className="h-4 w-4" /></>}
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={login} noValidate>
+          <button type="button" onClick={() => { setStep('phone'); setPassword(''); setError('') }} className="mb-6 inline-flex items-center gap-2 text-[0.8125rem] font-semibold text-slate hover:text-navy">
+            <ArrowLeft className="h-4 w-4" /> {phone}
+          </button>
+
+          {notice && (
+            <div className="mb-6 flex gap-3 rounded-2xl border border-teal/20 bg-teal/6 px-4 py-3.5 text-[0.875rem] leading-relaxed text-navy">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal text-white"><Check className="h-3 w-3" /></span>
+              {notice}
+            </div>
+          )}
+
+          <label htmlFor={`${uid}-password`} className="label mb-2.5 block text-slate">{isNew ? 'Код-пароль из SMS' : 'Пароль'}</label>
+          <div className="relative">
+            <input
+              id={`${uid}-password`}
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              autoFocus
+              value={password}
+              onChange={(event) => { setPassword(event.target.value); setError('') }}
+              className={`${field} pr-13`}
+              placeholder="Введите пароль"
+            />
+            <button type="button" aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'} onClick={() => setShowPassword((value) => !value)} className="absolute top-1/2 right-4 -translate-y-1/2 text-slate-soft hover:text-navy">
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
           </div>
-        )}
 
-        <div className="mb-4">
-          <div className="mb-2 flex items-baseline justify-between gap-3">
-            <label htmlFor={`${uid}-password`} className="label text-slate">
-              Пароль
-            </label>
-            {mode === 'login' && (
-              <span className="text-[0.75rem] text-slate-soft">
-                Восстановление появится вместе с кабинетом
-              </span>
-            )}
-          </div>
-          <input
-            id={`${uid}-password`}
-            name="password"
-            type="password"
-            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            value={values.password}
-            onChange={set('password')}
-            placeholder="Не короче 8 символов"
-            className={field}
-            {...aria('password')}
-          />
-          {err('password')}
-        </div>
+          {error && <p role="alert" className="mt-4 text-[0.8125rem] font-medium text-destructive">{error}</p>}
 
-        {mode === 'register' && (
-          <div className="mb-5">
-            <label className="flex cursor-pointer items-start gap-3 text-[0.8125rem] leading-snug text-slate">
-              <input
-                type="checkbox"
-                checked={consent}
-                onChange={(e) => {
-                  setConsent(e.target.checked)
-                  setErrors((x) => ({ ...x, consent: undefined }))
-                }}
-                className="mt-0.5 h-4.5 w-4.5 shrink-0 accent-teal"
-                {...aria('consent')}
-              />
-              <span>
-                Согласен на обработку персональных данных. Сама {pending.privacy} будет
-                опубликована до запуска кабинета.
-              </span>
-            </label>
-            {err('consent')}
-          </div>
-        )}
+          <button disabled={loading} className="mt-6 flex h-13 w-full items-center justify-center gap-2 rounded-full bg-teal px-6 font-display text-[0.9375rem] font-bold text-white shadow-[0_12px_34px_rgba(20,164,175,.24)] transition hover:bg-teal-hi disabled:opacity-60">
+            {loading ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <>Открыть кабинет <ArrowRight className="h-4 w-4" /></>}
+          </button>
 
-        <button
-          type="submit"
-          className="mt-1 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-teal font-display text-[0.875rem] font-bold text-white shadow-[0_10px_28px_rgba(17,184,194,0.24)] transition-[background-color,transform,box-shadow] duration-200 hover:bg-teal-hi hover:shadow-[0_12px_34px_rgba(17,184,194,0.34)] active:scale-[0.98]"
-        >
-          {mode === 'login' ? 'Войти' : 'Зарегистрироваться'}
-          <IconArrow className="h-4 w-4" />
-        </button>
+          <button type="button" onClick={remember} disabled={loading} className="mx-auto mt-5 block text-[0.8125rem] font-semibold text-teal hover:text-navy disabled:opacity-50">
+            Не помню пароль — прислать новый
+          </button>
+        </form>
+      )}
 
-        {sent && (
-          <div
-            role="status"
-            className="mt-5 rounded-xl border border-teal/30 bg-teal/8 px-4 py-4 text-[0.8125rem] leading-relaxed text-navy"
-          >
-            <p className="flex items-center gap-2 font-display text-[0.875rem] font-bold">
-              <IconCheck className="h-4 w-4 text-teal" />
-              Поля заполнены верно
-            </p>
-            <p className="mt-2 text-slate">
-              Кабинет ещё не подключён к системе учёта, поэтому введённое никуда не отправлено и
-              нигде не сохранено. Статус заказа сейчас подскажут по телефону.
-            </p>
-            <TrackedPhoneLink
-              href={org.phones[0].href}
-              className="mt-3 inline-flex items-center gap-1.5 font-display text-[0.875rem] font-bold text-teal"
-            >
-              {org.phones[0].display}
-              <IconArrow className="h-4 w-4" />
-            </TrackedPhoneLink>
-          </div>
-        )}
-      </form>
-
-      <p className="mt-8 border-t border-line pt-6 text-[0.8125rem] leading-relaxed text-slate">
-        Нужен статус заказа прямо сейчас? Позвоните{' '}
-        <TrackedPhoneLink href={org.phones[0].href} className="font-semibold text-teal">
-          {org.phones[0].display}
-        </TrackedPhoneLink>{' '}
-        или напишите на{' '}
-        <a href={`mailto:${org.email}`} className="font-semibold text-teal">
-          {org.email}
-        </a>
-        .
+      <p className="mt-9 border-t border-line pt-6 text-[0.8125rem] leading-relaxed text-slate">
+        Нужна помощь? Позвоните нам: <a href="tel:+79166959179" className="font-semibold text-navy">+7 (916) 695-91-79</a>
       </p>
     </div>
   )
