@@ -38,10 +38,12 @@ function SlidePhoto({
   slide,
   hidden,
   eager,
+  priority,
 }: {
   slide: HeroSlide
   hidden: boolean
   eager: boolean
+  priority: boolean
 }) {
   const alt = hidden ? '' : slide.alt
 
@@ -75,7 +77,8 @@ function SlidePhoto({
         srcSet={tall}
         draggable={false}
         loading={eager ? 'eager' : 'lazy'}
-        fetchPriority={eager ? 'high' : 'auto'}
+        fetchPriority={priority ? 'high' : 'auto'}
+        decoding={priority ? 'sync' : 'async'}
         className="absolute inset-0 h-full w-full object-cover object-[50%_46%]"
       />
     </picture>
@@ -110,6 +113,7 @@ export function HeroSlides({ pos, dx, fade, moving, warm, onTransitionEnd }: Pro
               slide={s}
               hidden={clone}
               eager={i === 1 || warm.includes(real)}
+              priority={i === 1}
             />
           </li>
         )
