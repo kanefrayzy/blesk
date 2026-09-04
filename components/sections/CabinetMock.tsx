@@ -73,7 +73,7 @@ export function CabinetMock() {
             <i className="block h-[1.2cqw] w-[1.2cqw] rounded-full bg-navy/15" />
           </span>
           <span className="ml-[1.4cqw] rounded-full bg-white px-[2.4cqw] py-[0.9cqw] text-[max(7px,1.5cqw)] text-slate-soft">
-            {org.site}/vhod
+            {org.site}/lk
           </span>
         </div>
 
@@ -140,7 +140,7 @@ export function CabinetMock() {
             <span className="h-[0.8cqw] w-[7cqw] rounded-full bg-navy/12" />
           </div>
 
-          <div className="px-[2.4cqw] pt-[2cqw] pb-[2.6cqw]">
+          <div className="px-[2.4cqw] pt-[2cqw] pb-[1.5cqw]">
             <Mark className="h-[2.6cqw] w-[2.6cqw]" />
 
             <p className="mt-[2cqw] text-[max(7px,1.4cqw)] tracking-[0.1em] text-slate-soft uppercase">
@@ -162,6 +162,13 @@ export function CabinetMock() {
                 style={{ width: `${((m.stage + 1) / m.stages.length) * 100}%` }}
               />
             </span>
+
+            <div className="mt-[2.6cqw] grid grid-cols-4 border-t border-line pt-[1.5cqw] text-center text-[max(5px,1cqw)] text-slate-soft">
+              <span className="text-teal">Заказы</span>
+              <span>История</span>
+              <span>Запись</span>
+              <span>Профиль</span>
+            </div>
           </div>
         </div>
       </div>

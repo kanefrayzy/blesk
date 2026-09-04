@@ -21,7 +21,7 @@ type Values = {
   website: string
 }
 
-const initialValues: Values = {
+const emptyValues: Values = {
   name: '',
   phone: '',
   email: '',
@@ -39,11 +39,35 @@ const field =
 
 const steps = ['Контакты', 'Услуга', 'Детали'] as const
 
-export function OrderForm() {
+type OrderFormProps = {
+  initialContact?: {
+    name?: string | null
+    phone?: string | null
+    email?: string | null
+  }
+}
+
+export function OrderForm({ initialContact }: OrderFormProps = {}) {
   const formRef = useRef<HTMLFormElement>(null)
   const [step, setStep] = useState(0)
   const [requestState, setRequestState] = useState<RequestState>('idle')
-  const [values, setValues] = useState<Values>(initialValues)
+  const [values, setValues] = useState<Values>(() => ({
+    ...emptyValues,
+    name: initialContact?.name ?? '',
+    phone: initialContact?.phone ?? '',
+    email: initialContact?.email ?? '',
+  }))
+
+  function resetForm() {
+    setValues({
+      ...emptyValues,
+      name: initialContact?.name ?? '',
+      phone: initialContact?.phone ?? '',
+      email: initialContact?.email ?? '',
+    })
+    setStep(0)
+    setRequestState('idle')
+  }
 
   function next() {
     if (!formRef.current?.reportValidity()) return
@@ -114,11 +138,7 @@ export function OrderForm() {
         </p>
         <button
           type="button"
-          onClick={() => {
-            setValues(initialValues)
-            setStep(0)
-            setRequestState('idle')
-          }}
+          onClick={resetForm}
           className="mt-8 rounded-full border border-line px-6 py-3 text-[0.8125rem] font-semibold text-navy transition-colors hover:border-teal hover:text-teal"
         >
           Новая заявка
@@ -165,7 +185,9 @@ export function OrderForm() {
         {step === 0 && (
           <fieldset>
             <legend className="h2 text-[1.375rem] text-navy">Как с вами связаться?</legend>
-            <p className="mt-2 text-[0.8125rem] text-slate">Оставьте контакты — без регистрации и оплаты.</p>
+            <p className="mt-2 text-[0.8125rem] text-slate">
+              {initialContact?.phone ? 'Имя и телефон заполнены из вашего профиля.' : 'Оставьте контакты — без регистрации и оплаты.'}
+            </p>
 
             <div className="mt-6 grid gap-5 sm:grid-cols-2">
               <label className="text-[0.8125rem] font-semibold text-navy sm:col-span-2">

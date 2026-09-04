@@ -10,6 +10,8 @@ import {
   Camera,
   Check,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   CircleHelp,
   Clock3,
   History,
@@ -22,7 +24,9 @@ import {
   Settings,
   Shirt,
   Sparkles,
+  X,
 } from 'lucide-react'
+import { OrderForm } from '@/components/order/OrderForm'
 
 type PublicStatus = { code: 'ready' | 'in_work'; label: string }
 type Detail = { label: string; value: string }
@@ -36,6 +40,7 @@ type Dashboard = {
   preferences: { email: string | null; email_notifications: boolean; push_notifications: boolean }
 }
 type View = 'orders' | 'history' | 'settings'
+type PhotoViewer = { photos: Photo[]; itemName: string; orderId: string; index: number }
 
 function money(value: number) {
   if (value <= 0) return 'Уточняется'
@@ -105,18 +110,22 @@ function StatusPill({ status }: { status: PublicStatus }) {
   )
 }
 
-function EmptyOrders() {
+function EmptyOrders({ onBook }: { onBook?: () => void }) {
   return (
     <div className="rounded-[1.75rem] border border-dashed border-slate-soft/35 bg-white px-6 py-12 text-center">
       <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-cream text-teal"><Sparkles className="h-6 w-6" /></span>
       <h3 className="mt-5 font-display text-xl font-bold text-navy">Сейчас нет заказов в работе</h3>
       <p className="mx-auto mt-2 max-w-[32rem] text-[0.875rem] leading-relaxed text-slate">Когда вы сдадите вещи в «Блеск», заказ появится здесь автоматически.</p>
-      <Link href="/#zapis" className="mt-6 inline-flex h-11 items-center rounded-full bg-navy px-5 font-display text-[0.8125rem] font-bold text-white">Записаться онлайн</Link>
+      {onBook ? (
+        <button type="button" onClick={onBook} className="mt-6 inline-flex h-11 items-center rounded-full bg-navy px-5 font-display text-[0.8125rem] font-bold text-white">Записаться онлайн</button>
+      ) : (
+        <Link href="/#zapis" className="mt-6 inline-flex h-11 items-center rounded-full bg-navy px-5 font-display text-[0.8125rem] font-bold text-white">Записаться онлайн</Link>
+      )}
     </div>
   )
 }
 
-function ItemCard({ item, orderId, index }: { item: OrderItem; orderId: string; index: number }) {
+function ItemCard({ item, orderId, index, onOpenPhoto }: { item: OrderItem; orderId: string; index: number; onOpenPhoto: (viewer: PhotoViewer) => void }) {
   const [open, setOpen] = useState(index === 0)
   return (
     <article className="overflow-hidden rounded-2xl border border-line bg-white transition hover:border-slate-soft/45">
@@ -157,10 +166,10 @@ function ItemCard({ item, orderId, index }: { item: OrderItem; orderId: string; 
               <p className="mb-3 flex items-center gap-2 text-[0.75rem] font-semibold text-slate"><Camera className="h-4 w-4 text-teal" /> Фото при приёмке</p>
               <div className="flex gap-3 overflow-x-auto pb-1">
                 {item.photos.map((photo) => (
-                  <a key={photo.id} href={`/api/v1/cabinet/photos/${photo.id}?service=${photo.service_id}`} target="_blank" className="relative block h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-mist">
+                  <button key={photo.id} type="button" onClick={() => onOpenPhoto({ photos: item.photos, itemName: item.name, orderId, index: item.photos.indexOf(photo) })} aria-label={`Открыть фото позиции «${item.name}»`} className="relative block h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-mist">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={`/api/v1/cabinet/photos/${photo.id}?service=${photo.service_id}`} alt={`Фото позиции «${item.name}» из заказа ${orderId}`} className="h-full w-full object-cover transition hover:scale-105" />
-                  </a>
+                  </button>
                 ))}
               </div>
             </div>
@@ -171,7 +180,7 @@ function ItemCard({ item, orderId, index }: { item: OrderItem; orderId: string; 
   )
 }
 
-function CurrentOrder({ order }: { order: Order }) {
+function CurrentOrder({ order, onOpenPhoto }: { order: Order; onOpenPhoto: (viewer: PhotoViewer) => void }) {
   const ready = order.status.code === 'ready'
   const progress = [
     { label: 'Принят', done: true },
@@ -220,13 +229,13 @@ function CurrentOrder({ order }: { order: Order }) {
           <div><p className="label text-teal">Изделия в заказе</p><p className="mt-1 text-[0.8125rem] text-slate">{order.items.length} {order.items.length === 1 ? 'позиция' : 'позиции'}</p></div>
           <span className="rounded-full bg-white px-3 py-1.5 text-[0.6875rem] font-semibold text-slate">Данные AGBIS</span>
         </div>
-        <div className="grid gap-3">{order.items.map((item, index) => <ItemCard key={item.id || index} item={item} index={index} orderId={order.number} />)}</div>
+        <div className="grid gap-3">{order.items.map((item, index) => <ItemCard key={item.id || index} item={item} index={index} orderId={order.number} onOpenPhoto={onOpenPhoto} />)}</div>
       </div>
     </article>
   )
 }
 
-function HistoryView({ orders }: { orders: Order[] }) {
+function HistoryView({ orders, onBook }: { orders: Order[]; onBook: () => void }) {
   return (
     <section>
       <p className="label text-teal">Архив</p>
@@ -239,7 +248,7 @@ function HistoryView({ orders }: { orders: Order[] }) {
             <StatusPill status={order.status} />
             <p className="font-display text-base font-bold text-navy sm:min-w-28 sm:text-right">{money(order.amount)}</p>
           </article>
-        )) : <EmptyOrders />}
+        )) : <EmptyOrders onBook={onBook} />}
       </div>
     </section>
   )
@@ -256,7 +265,7 @@ function Toggle({ checked, onChange, label, note, icon: Icon }: { checked: boole
   )
 }
 
-function SettingsView({ dashboard, onSaved }: { dashboard: Dashboard; onSaved: (prefs: Dashboard['preferences']) => void }) {
+function SettingsView({ dashboard, onSaved, onLogout }: { dashboard: Dashboard; onSaved: (prefs: Dashboard['preferences']) => void; onLogout: () => void }) {
   const [prefs, setPrefs] = useState(dashboard.preferences)
   const [saving, setSaving] = useState(false)
   const [pushSaving, setPushSaving] = useState(false)
@@ -313,7 +322,60 @@ function SettingsView({ dashboard, onSaved }: { dashboard: Dashboard; onSaved: (
           {message && <p role="status" className="text-[0.8125rem] font-medium text-slate">{message}</p>}
         </div>
       </form>
+      <button type="button" onClick={onLogout} className="mt-5 inline-flex h-11 items-center gap-2 rounded-full px-4 text-[0.8125rem] font-semibold text-slate transition hover:bg-white hover:text-navy lg:hidden"><LogOut className="h-4 w-4" /> Выйти из кабинета</button>
     </section>
+  )
+}
+
+function BookingModal({ dashboard, onClose }: { dashboard: Dashboard; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-navy/65 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="booking-title" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
+      <div className="flex max-h-[94svh] w-full max-w-[46rem] flex-col overflow-hidden rounded-t-[2rem] bg-white shadow-[0_30px_100px_rgba(5,12,30,.35)] sm:max-h-[90svh] sm:rounded-[2rem]">
+        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-4 sm:px-8">
+          <div><p className="label text-teal">Личный кабинет</p><h2 id="booking-title" className="mt-2 font-display text-xl font-bold text-navy sm:text-2xl">Запись в химчистку</h2></div>
+          <button type="button" onClick={onClose} aria-label="Закрыть запись" className="flex h-10 w-10 items-center justify-center rounded-full bg-mist text-navy"><X className="h-5 w-5" /></button>
+        </div>
+        <div className="overflow-y-auto overscroll-contain">
+          <OrderForm initialContact={{ name: dashboard.profile.name, phone: dashboard.profile.phone, email: dashboard.preferences.email }} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PhotoModal({ viewer, onChange, onClose }: { viewer: PhotoViewer; onChange: (index: number) => void; onClose: () => void }) {
+  const photo = viewer.photos[viewer.index]
+  const total = viewer.photos.length
+
+  function move(direction: -1 | 1) {
+    onChange((viewer.index + direction + total) % total)
+  }
+
+  return (
+    <div className="fixed inset-0 z-[80] flex flex-col bg-[#071022]/96 text-white backdrop-blur-md" role="dialog" aria-modal="true" aria-label={`Фотопротокол позиции «${viewer.itemName}»`}>
+      <div className="flex items-center justify-between gap-4 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-3 sm:px-7">
+        <div className="min-w-0"><p className="truncate font-display text-[0.9375rem] font-bold">{viewer.itemName}</p><p className="mt-0.5 text-[0.6875rem] text-white/45">Заказ № {viewer.orderId} · {viewer.index + 1} из {total}</p></div>
+        <button type="button" onClick={onClose} aria-label="Закрыть фотопротокол" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/18"><X className="h-5 w-5" /></button>
+      </div>
+
+      <div className="relative flex min-h-0 flex-1 items-center justify-center px-3 py-3 sm:px-20">
+        {total > 1 && <button type="button" onClick={() => move(-1)} aria-label="Предыдущее фото" className="absolute left-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 backdrop-blur transition hover:bg-white/20 sm:left-6"><ChevronLeft className="h-6 w-6" /></button>}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={`/api/v1/cabinet/photos/${photo.id}?service=${photo.service_id}`} alt={`Фото позиции «${viewer.itemName}»`} className="max-h-full max-w-full rounded-2xl object-contain shadow-[0_24px_80px_rgba(0,0,0,.35)]" />
+        {total > 1 && <button type="button" onClick={() => move(1)} aria-label="Следующее фото" className="absolute right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 backdrop-blur transition hover:bg-white/20 sm:right-6"><ChevronRight className="h-6 w-6" /></button>}
+      </div>
+
+      {total > 1 && (
+        <div className="flex shrink-0 justify-center gap-2 overflow-x-auto px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          {viewer.photos.map((thumb, index) => (
+            <button key={thumb.id} type="button" onClick={() => onChange(index)} aria-label={`Фото ${index + 1}`} className={`h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 transition ${index === viewer.index ? 'border-teal' : 'border-transparent opacity-55'}`}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/api/v1/cabinet/photos/${thumb.id}?service=${thumb.service_id}`} alt="" className="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -323,6 +385,8 @@ export function CabinetDashboard() {
   const [view, setView] = useState<View>('orders')
   const [error, setError] = useState('')
   const [refreshing, setRefreshing] = useState(false)
+  const [bookingOpen, setBookingOpen] = useState(false)
+  const [photoViewer, setPhotoViewer] = useState<PhotoViewer | null>(null)
 
   async function load() {
     setRefreshing(true); setError('')
@@ -337,6 +401,29 @@ export function CabinetDashboard() {
   }
 
   useEffect(() => { void load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!bookingOpen && !photoViewer) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setBookingOpen(false)
+        setPhotoViewer(null)
+      }
+      if (photoViewer && photoViewer.photos.length > 1 && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+        const direction = event.key === 'ArrowLeft' ? -1 : 1
+        setPhotoViewer((current) => current ? { ...current, index: (current.index + direction + current.photos.length) % current.photos.length } : null)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [bookingOpen, photoViewer])
 
   const greeting = useMemo(() => firstName(data?.profile.name ?? null), [data?.profile.name])
 
@@ -371,51 +458,59 @@ export function CabinetDashboard() {
         <nav className="mt-16 grid gap-2">
           {nav.map(({ id, label, icon: Icon }) => <button key={id} onClick={() => selectView(id)} className={`flex h-12 items-center gap-3 rounded-xl px-4 text-left text-[0.8125rem] font-semibold transition ${view === id ? 'bg-white text-navy' : 'text-white/55 hover:bg-white/6 hover:text-white'}`}><Icon className={`h-4 w-4 ${view === id ? 'text-teal' : ''}`} />{label}</button>)}
         </nav>
+        <button type="button" onClick={() => setBookingOpen(true)} className="mt-5 flex h-12 items-center justify-center gap-2 rounded-xl bg-teal px-4 text-[0.8125rem] font-bold text-white transition hover:bg-teal-hi"><CalendarPlus className="h-4 w-4" /> Записаться</button>
         <div className="mt-auto rounded-2xl border border-white/10 p-4"><p className="text-[0.6875rem] text-white/35">Нужна помощь?</p><a href="tel:+79166959179" className="mt-1 block text-[0.8125rem] font-semibold">+7 (916) 695-91-79</a><p className="mt-1 text-[0.6875rem] text-white/35">Ежедневно, 9:00–20:00</p></div>
         <button onClick={logout} className="mt-4 flex items-center gap-2 px-2 text-[0.75rem] font-semibold text-white/45 hover:text-white"><LogOut className="h-4 w-4" /> Выйти</button>
       </aside>
 
       <div className="min-w-0">
-        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line/70 bg-white/88 px-4 pt-[max(.75rem,env(safe-area-inset-top))] pb-3 shadow-[0_4px_24px_rgba(14,26,53,.035)] backdrop-blur-xl sm:px-7 lg:bg-[#f4f3ef]/95 lg:px-10 lg:py-4 lg:shadow-none">
-          <div className="flex items-center gap-3 lg:hidden">
-            <Link href="/" aria-label="Блеск — на главную"><Image src="/brand/logo-h-navy.svg" alt="Блеск" width={1701} height={482} className="h-7 w-auto" priority /></Link>
-            <span className="hidden h-5 w-px bg-line sm:block" />
-            <span className="hidden text-[0.75rem] font-medium text-slate sm:block">Личный кабинет</span>
+        <header className="flex items-center justify-between px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-2 sm:px-7 lg:hidden">
+          <div className="flex items-center gap-3">
+            <Link href="/" aria-label="Блеск — на главную"><Image src="/brand/mark-navy.svg" alt="Блеск" width={64} height={64} className="h-9 w-9" priority /></Link>
+            <div><p className="font-display text-[0.875rem] font-bold leading-tight text-navy">Личный кабинет</p><p className="mt-0.5 text-[0.6875rem] leading-tight text-slate-soft">{greeting || data.profile.phone}</p></div>
           </div>
-          <div className="hidden lg:block"><p className="text-[0.75rem] text-slate-soft">Личный кабинет</p><p className="font-display text-[0.875rem] font-bold text-navy">{data.profile.phone}</p></div>
+          <button onClick={load} disabled={refreshing} aria-label="Обновить данные" className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate shadow-[0_5px_20px_rgba(14,26,53,.07)] transition hover:text-teal"><RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /></button>
+        </header>
+
+        <header className="sticky top-0 z-30 hidden items-center justify-between border-b border-line/70 bg-[#f4f3ef]/95 px-10 py-4 backdrop-blur-xl lg:flex">
+          <div><p className="text-[0.75rem] text-slate-soft">Личный кабинет</p><p className="font-display text-[0.875rem] font-bold text-navy">{data.profile.phone}</p></div>
           <div className="flex items-center gap-2">
             <button onClick={load} disabled={refreshing} aria-label="Обновить данные" className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-slate shadow-sm transition hover:text-teal"><RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /></button>
-            <button onClick={logout} aria-label="Выйти" className="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white text-slate shadow-sm transition hover:text-navy lg:hidden"><LogOut className="h-4 w-4" /></button>
             <span className="hidden h-10 items-center rounded-full bg-white px-4 text-[0.75rem] font-semibold text-navy shadow-sm sm:flex">{greeting || 'Клиент «Блеска»'}</span>
           </div>
         </header>
 
-        <div className="mx-auto max-w-[82rem] px-3 pt-6 pb-[calc(7.5rem+env(safe-area-inset-bottom))] sm:px-7 sm:pt-9 lg:px-10 lg:py-12">
+        <div className="mx-auto max-w-[82rem] px-4 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-7 sm:pt-8 lg:px-10 lg:py-12">
           {error && <div className="mb-6 rounded-xl border border-destructive/20 bg-white px-4 py-3 text-[0.8125rem] text-destructive">{error}</div>}
-          {view === 'orders' && <section><div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8"><div><p className="label text-teal">Добрый день{greeting ? `, ${greeting}` : ''}</p><h1 className="mt-2 font-display text-[2rem] font-bold tracking-[-.035em] text-navy sm:mt-3 sm:text-5xl">Ваши заказы</h1></div><div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[0.6875rem] text-slate-soft shadow-sm sm:text-[0.75rem]"><Clock3 className="h-3.5 w-3.5 text-teal sm:h-4 sm:w-4" /> Данные из AGBIS</div></div><div className="grid gap-6">{data.orders.length ? data.orders.map((order) => <CurrentOrder key={order.id} order={order} />) : <EmptyOrders />}</div></section>}
-          {view === 'history' && <HistoryView orders={data.history} />}
-          {view === 'settings' && <SettingsView dashboard={data} onSaved={(preferences) => setData({ ...data, preferences })} />}
+          {view === 'orders' && <section><div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8"><div><p className="label text-teal">Добрый день{greeting ? `, ${greeting}` : ''}</p><h1 className="mt-2 font-display text-[2rem] font-bold tracking-[-.035em] text-navy sm:mt-3 sm:text-5xl">Ваши заказы</h1></div><div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[0.6875rem] text-slate-soft shadow-sm sm:text-[0.75rem]"><Clock3 className="h-3.5 w-3.5 text-teal sm:h-4 sm:w-4" /> Данные из AGBIS</div></div><div className="grid gap-6">{data.orders.length ? data.orders.map((order) => <CurrentOrder key={order.id} order={order} onOpenPhoto={setPhotoViewer} />) : <EmptyOrders onBook={() => setBookingOpen(true)} />}</div></section>}
+          {view === 'history' && <HistoryView orders={data.history} onBook={() => setBookingOpen(true)} />}
+          {view === 'settings' && <SettingsView dashboard={data} onSaved={(preferences) => setData({ ...data, preferences })} onLogout={logout} />}
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-[max(.75rem,env(safe-area-inset-bottom))] z-50 mx-auto w-[calc(100%-1.5rem)] max-w-[34rem] lg:hidden">
-        <nav aria-label="Навигация личного кабинета" className="grid grid-cols-4 items-center rounded-[1.6rem] border border-white/70 bg-white/92 px-2 py-2 shadow-[0_18px_50px_rgba(14,26,53,.22)] backdrop-blur-xl">
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-line/80 bg-white/96 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_30px_rgba(14,26,53,.07)] backdrop-blur-xl lg:hidden">
+        <nav aria-label="Навигация личного кабинета" className="mx-auto grid h-[4.5rem] max-w-[38rem] grid-cols-4 items-stretch px-2">
           {nav.slice(0, 2).map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => selectView(id)} aria-current={view === id ? 'page' : undefined} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[0.625rem] font-semibold transition ${view === id ? 'bg-mist text-navy' : 'text-slate-soft'}`}>
-              <Icon className={`h-5 w-5 ${view === id ? 'text-teal' : ''}`} />
+            <button key={id} onClick={() => selectView(id)} aria-current={view === id ? 'page' : undefined} className={`relative flex flex-col items-center justify-center gap-1 text-[0.625rem] font-semibold transition ${view === id ? 'text-teal' : 'text-slate-soft'}`}>
+              {view === id && <span className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-teal" />}
+              <Icon className="h-5 w-5" />
               <span>{label === 'Мои заказы' ? 'Заказы' : label}</span>
             </button>
           ))}
-          <Link href="/#zapis" className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[0.625rem] font-semibold text-slate-soft">
-            <span className="-mt-5 flex h-11 w-11 items-center justify-center rounded-full bg-teal text-white shadow-[0_9px_24px_rgba(20,164,175,.34)] ring-4 ring-white"><CalendarPlus className="h-5 w-5" /></span>
+          <button type="button" onClick={() => setBookingOpen(true)} className="flex flex-col items-center justify-center gap-1 text-[0.625rem] font-semibold text-slate-soft">
+            <CalendarPlus className="h-5 w-5" />
             <span>Записаться</span>
-          </Link>
-          <button onClick={() => selectView('settings')} aria-current={view === 'settings' ? 'page' : undefined} className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[0.625rem] font-semibold transition ${view === 'settings' ? 'bg-mist text-navy' : 'text-slate-soft'}`}>
-            <Settings className={`h-5 w-5 ${view === 'settings' ? 'text-teal' : ''}`} />
+          </button>
+          <button onClick={() => selectView('settings')} aria-current={view === 'settings' ? 'page' : undefined} className={`relative flex flex-col items-center justify-center gap-1 text-[0.625rem] font-semibold transition ${view === 'settings' ? 'text-teal' : 'text-slate-soft'}`}>
+            {view === 'settings' && <span className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-teal" />}
+            <Settings className="h-5 w-5" />
             <span>Профиль</span>
           </button>
         </nav>
       </div>
+
+      {bookingOpen && <BookingModal dashboard={data} onClose={() => setBookingOpen(false)} />}
+      {photoViewer && <PhotoModal viewer={photoViewer} onChange={(index) => setPhotoViewer({ ...photoViewer, index })} onClose={() => setPhotoViewer(null)} />}
     </main>
   )
 }

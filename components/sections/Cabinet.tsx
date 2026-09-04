@@ -8,6 +8,7 @@ export function Cabinet() {
     <section id="kak-rabotaet" aria-labelledby="cabinet-title" className="overflow-hidden bg-navy">
       <Container className="grid items-center gap-14 py-16 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12 lg:py-20">
         <div>
+          <p className="label mb-5 text-teal">Личный кабинет уже работает</p>
           <h2
             id="cabinet-title"
             className="h2 max-w-[16ch] text-[clamp(1.5rem,2.6vw,2.125rem)] text-white"
@@ -16,8 +17,8 @@ export function Cabinet() {
           </h2>
 
           <p className="mt-6 max-w-[44ch] text-[0.9375rem] leading-relaxed text-white/70">
-            От приёма до выдачи: смотрите, на каком участке изделие прямо сейчас, храните историю
-            заказов и рекомендации по уходу — с компьютера и с телефона.
+            Следите за заказом и каждой вещью отдельно, открывайте фотопротокол, получайте
+            уведомления и записывайтесь в химчистку прямо из кабинета.
           </p>
 
           <Link
@@ -29,8 +30,8 @@ export function Cabinet() {
           </Link>
 
           <p className="mt-6 max-w-[44ch] text-[0.75rem] leading-relaxed text-white/45">
-            Интерфейс показан макетом: кабинет заработает, когда его подключат к системе учёта
-            заказов.
+            Вход и регистрация — по номеру телефона. Данные о заказах автоматически поступают из
+            системы учёта AGBIS.
           </p>
         </div>
 
