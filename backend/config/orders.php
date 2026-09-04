@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'recipient' => env('ORDER_RECIPIENT_EMAIL', 'info@bleskvip.ru'),
+    'recipient' => env('ORDER_RECIPIENT_EMAIL', 'blesk.vip@yandex.ru'),
 ];

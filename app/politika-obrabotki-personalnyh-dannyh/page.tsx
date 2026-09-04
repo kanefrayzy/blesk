@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
   return (
     <LegalDocument
       title="Политика обработки персональных данных"
-      description="Редакция от 3 сентября 2026 года"
+      description="Редакция от 4 сентября 2026 года"
     >
       <h2>1. Общие положения</h2>
       <p>
@@ -24,16 +24,14 @@ export default function PrivacyPolicyPage() {
       </p>
 
       <h2>2. Сведения об операторе</h2>
-      <p>
-        Оператор персональных данных: <Placeholder>ПОЛНОЕ НАИМЕНОВАНИЕ ЮРИДИЧЕСКОГО ЛИЦА ИЛИ ФИО ИП</Placeholder>.
-      </p>
+      <p>Оператор персональных данных: ИП Макеева Людмила Михайловна.</p>
       <ul>
-        <li>ИНН: <Placeholder>ИНН</Placeholder>.</li>
-        <li>ОГРН или ОГРНИП: <Placeholder>ОГРН / ОГРНИП</Placeholder>.</li>
-        <li>Юридический адрес: <Placeholder>ЮРИДИЧЕСКИЙ АДРЕС</Placeholder>.</li>
+        <li>ИНН: 772425497354.</li>
+        <li>ОГРНИП: 304770000331041.</li>
+        <li>Юридический адрес: 109147, г. Москва, ул. Марксистская, д. 7, кв. 160.</li>
         <li>Адрес для обращений: Московская область, г. Жуковский, ул. Энергетическая, д. 9.</li>
         <li>Электронная почта: info@bleskvip.ru.</li>
-        <li>Телефон ответственного лица: <Placeholder>ТЕЛЕФОН</Placeholder>.</li>
+        <li>Телефон ответственного лица: +7 (916) 070-28-04.</li>
       </ul>
 
       <h2>3. Категории субъектов и состав данных</h2>
@@ -150,4 +148,3 @@ export default function PrivacyPolicyPage() {
     </LegalDocument>
   )
 }
-
