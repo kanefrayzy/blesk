@@ -19,6 +19,29 @@ class CabinetApiTest extends TestCase
         config(['agbis.base_url' => 'https://example.test/api/']);
     }
 
+    public function test_unavailable_agbis_is_not_shown_as_an_empty_cabinet(): void
+    {
+        $session = CabinetSession::query()->create([
+            'token_hash' => hash('sha256', $token = str_repeat('t', 80)),
+            'agbis_session' => 'AGBIS-SESSION',
+            'contr_id' => '10012220',
+            'phone' => '+79263314618',
+            'last_seen_at' => now(),
+            'expires_at' => now()->addDay(),
+        ]);
+
+        // AGBIS отдаёт отказ кодом внутри тела, HTTP при этом обычный 200.
+        Http::fake(['*' => Http::response(['error' => 108, 'Msg' => 'Сервер недоступен!'])]);
+
+        $this->withToken($token)
+            ->getJson('/api/v1/cabinet/dashboard')
+            ->assertStatus(503)
+            ->assertJsonPath('message', 'Сервер недоступен!')
+            ->assertJsonMissingPath('orders');
+
+        $this->assertModelExists($session);
+    }
+
     public function test_unknown_phone_is_reported_as_such(): void
     {
         $this->postJson('/api/v1/cabinet/check-phone', ['phone' => '+79990000000'])

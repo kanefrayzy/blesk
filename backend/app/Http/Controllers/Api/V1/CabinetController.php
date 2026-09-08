@@ -31,11 +31,24 @@ class CabinetController extends Controller
             return response()->json(['message' => $exception->getMessage()], 503);
         }
 
-        if ((int) ($activeResult['error'] ?? 0) === 3) {
+        $error = (int) ($activeResult['error'] ?? 0);
+
+        if ($error === 3) {
             $session->delete();
 
             return response()->json(['message' => 'Сессия истекла. Войдите ещё раз.'], 401)
                 ->withoutCookie(config('agbis.cookie'));
+        }
+
+        // AGBIS сообщает об отказе кодом внутри ответа, а сам ответ приходит
+        // с обычным HTTP 200. Без этой проверки недоступная база выглядела бы
+        // как пустой кабинет: человек с вещами в чистке видел «заказов нет».
+        if ($error !== 0) {
+            Log::warning('AGBIS отказал при сборке кабинета', ['error' => $error]);
+
+            return response()->json([
+                'message' => $activeResult['Msg'] ?: 'Сервис заказов временно недоступен. Попробуйте ещё раз чуть позже.',
+            ], 503);
         }
 
         $active = [];
