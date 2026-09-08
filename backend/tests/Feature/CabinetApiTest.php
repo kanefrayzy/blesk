@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\CabinetSession;
+use App\Models\KnownPhone;
 use App\Models\PushSubscription;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -16,6 +17,55 @@ class CabinetApiTest extends TestCase
     {
         parent::setUp();
         config(['agbis.base_url' => 'https://example.test/api/']);
+    }
+
+    public function test_unknown_phone_is_reported_as_such(): void
+    {
+        $this->postJson('/api/v1/cabinet/check-phone', ['phone' => '+79990000000'])
+            ->assertOk()
+            ->assertJsonPath('known', false);
+    }
+
+    public function test_phone_is_remembered_when_the_code_is_sent_not_when_login_succeeds(): void
+    {
+        Http::fake([
+            'https://himinfo.ru/*' => Http::response('PNG', 200, ['Set-Cookie' => 'CaptchaID=guid-1; Path=/']),
+            'https://example.test/*' => Http::response(['error' => 0, 'Msg' => rawurlencode('Отправлено')]),
+        ]);
+
+        $this->postJson('/api/v1/cabinet/send-code', [
+            'phone' => '+79263314618',
+            'captcha_token' => $this->getJson('/api/v1/cabinet/captcha')->json('token'),
+            'captcha_value' => 'аб12в',
+            'mode' => 'register',
+            'consent' => true,
+        ])->assertOk();
+
+        // Войти человек мог и не дойти — второй раз регистрацию не дёргаем.
+        $this->postJson('/api/v1/cabinet/check-phone', ['phone' => '+79263314618'])
+            ->assertJsonPath('known', true);
+    }
+
+    public function test_known_phones_are_stored_only_as_fingerprints(): void
+    {
+        Http::fake([
+            'https://himinfo.ru/*' => Http::response('PNG', 200, ['Set-Cookie' => 'CaptchaID=guid-2; Path=/']),
+            'https://example.test/*' => Http::response(['error' => 0, 'Msg' => rawurlencode('Отправлено')]),
+        ]);
+
+        $this->postJson('/api/v1/cabinet/send-code', [
+            'phone' => '+79263314618',
+            'captcha_token' => $this->getJson('/api/v1/cabinet/captcha')->json('token'),
+            'captcha_value' => 'аб12в',
+            'mode' => 'register',
+            'consent' => true,
+        ])->assertOk();
+
+        $stored = KnownPhone::sole();
+
+        $this->assertNotSame('+79263314618', $stored->phone_hash);
+        $this->assertSame(64, strlen($stored->phone_hash));
+        $this->assertDatabaseMissing('cabinet_known_phones', ['phone_hash' => '+79263314618']);
     }
 
     public function test_captcha_is_proxied_and_its_agbis_id_never_reaches_the_browser(): void

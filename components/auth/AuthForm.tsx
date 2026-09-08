@@ -125,14 +125,26 @@ export function AuthForm() {
 
   const validPhone = /^\+7\d{10}$/.test(normalizePhone(phone))
 
-  function submitPhone(event: FormEvent) {
+  async function submitPhone(event: FormEvent) {
     event.preventDefault()
     setError('')
     if (!validPhone) return setError('Введите российский номер телефона полностью.')
     if (!consent) return setError('Подтвердите согласие на обработку персональных данных.')
 
     setNotice('')
-    setStep('password')
+    setLoading(true)
+    try {
+      // Спрашиваем свою базу, а не AGBIS: знакомого ведём к паролю,
+      // незнакомого — к коду. Ошиблись — на обоих экранах есть ссылка
+      // на другой путь, потому что кабинет можно завести и мимо сайта.
+      const { known } = await api('check-phone', { phone: normalizePhone(phone) })
+      setStep('password')
+      if (!known) await openCodeForm('register')
+    } catch {
+      setStep('password')
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function login(event: FormEvent) {
@@ -160,8 +172,10 @@ export function AuthForm() {
           <h1 className="mt-3 font-display text-[1.75rem] leading-[1.06] font-bold tracking-[-.035em] text-navy sm:text-[2.35rem] xl:text-[2.75rem]">
             {step === 'phone'
               ? 'Войти по телефону'
-              : codeMode
-                ? 'Подтвердите, что вы человек'
+              : codeMode === 'register'
+                ? 'Первый вход'
+                : codeMode === 'reset'
+                  ? 'Новый пароль'
                 : isNew
                   ? 'Проверьте SMS'
                   : 'Введите пароль'}
@@ -214,13 +228,13 @@ export function AuthForm() {
       ) : codeMode ? (
         <form onSubmit={sendCode} noValidate>
           <button type="button" onClick={() => { setCodeMode(null); setCaptcha(null); setError('') }} className="mb-6 inline-flex items-center gap-2 text-[0.8125rem] font-semibold text-slate hover:text-navy">
-            <ArrowLeft className="h-4 w-4" /> Назад ко входу
+            <ArrowLeft className="h-4 w-4" /> {phone}
           </button>
 
           <p className="mb-6 max-w-[40ch] text-[0.875rem] leading-relaxed text-slate sm:text-[0.9375rem]">
             {codeMode === 'reset'
-              ? 'Пришлём новый пароль в SMS на ' + phone + '. Подтвердите, что вы не робот.'
-              : 'Пришлём код-пароль в SMS на ' + phone + '. Подтвердите, что вы не робот.'}
+              ? 'Пришлём новый пароль в SMS. Введите код с картинки — он защищает от рассылки чужими руками.'
+              : 'Этот номер входит впервые. Пришлём код-пароль в SMS, а код с картинки нужен, чтобы никто не слал их за вас.'}
           </p>
 
           <div className="flex items-center gap-3">
@@ -253,6 +267,10 @@ export function AuthForm() {
 
           <button disabled={loading || captchaLoading || !captcha} className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-teal px-6 font-display text-[0.9375rem] font-bold text-white shadow-[0_12px_34px_rgba(20,164,175,.24)] transition hover:bg-teal-hi disabled:opacity-60">
             {loading ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <>Прислать SMS <ArrowRight className="h-4 w-4" /></>}
+          </button>
+
+          <button type="button" onClick={() => { setCodeMode(null); setCaptcha(null); setError('') }} className="mx-auto mt-5 block text-[0.8125rem] font-semibold text-slate hover:text-navy">
+            У меня уже есть пароль
           </button>
         </form>
       ) : (

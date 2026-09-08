@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Exceptions\AgbisException;
 use App\Http\Controllers\Controller;
 use App\Models\CabinetSession;
+use App\Models\KnownPhone;
 use App\Services\AgbisClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,20 @@ use Illuminate\Support\Str;
 
 class CabinetAuthController extends Controller
 {
+    /**
+     * Знаком ли нам номер. Ответ — подсказка для формы, а не истина:
+     * кабинет можно завести мимо сайта, поэтому на обоих экранах остаётся
+     * ссылка на другой путь.
+     */
+    public function checkPhone(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'phone' => ['required', 'string', 'regex:/^\+7\d{10}$/'],
+        ]);
+
+        return response()->json(['known' => KnownPhone::knows($data['phone'])]);
+    }
+
     /**
      * Картинка с кодом. AGBIS отдаёт метку в cookie на своём домене, а ходим
      * к нему мы с сервера — поэтому метку держим у себя, а браузеру выдаём
@@ -80,6 +95,8 @@ class CabinetAuthController extends Controller
         }
 
         if ((string) ($result['exists'] ?? '') === '1') {
+            KnownPhone::remember($data['phone'], 'code_sent_at');
+
             return response()->json([
                 'state' => 'has_password',
                 'message' => 'У этого номера уже есть пароль от кабинета. Введите его или запросите новый.',
@@ -92,6 +109,8 @@ class CabinetAuthController extends Controller
                 'retry_captcha' => true,
             ], 422);
         }
+
+        KnownPhone::remember($data['phone'], 'code_sent_at');
 
         return response()->json([
             'state' => 'sent',
@@ -117,6 +136,8 @@ class CabinetAuthController extends Controller
                 'message' => 'Не удалось войти. Проверьте пароль из SMS или запросите новый.',
             ], 422);
         }
+
+        KnownPhone::remember($data['phone'], 'logged_in_at');
 
         $token = Str::random(80);
         $days = config('agbis.session_days');

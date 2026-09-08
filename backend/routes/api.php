@@ -19,6 +19,7 @@ Route::prefix('v1')->group(function (): void {
         ->name('api.v1.order-requests.store');
 
     Route::prefix('cabinet')->group(function (): void {
+        Route::post('check-phone', [CabinetAuthController::class, 'checkPhone'])->middleware('throttle:10,1');
         Route::get('captcha', [CabinetAuthController::class, 'captcha'])->middleware('throttle:20,1');
         Route::post('send-code', [CabinetAuthController::class, 'sendCode'])->middleware('throttle:3,1');
         Route::post('login', [CabinetAuthController::class, 'login'])->middleware('throttle:5,1');
