@@ -19,9 +19,9 @@ Route::prefix('v1')->group(function (): void {
         ->name('api.v1.order-requests.store');
 
     Route::prefix('cabinet')->group(function (): void {
-        Route::post('identify', [CabinetAuthController::class, 'identify'])->middleware('throttle:3,1');
+        Route::get('captcha', [CabinetAuthController::class, 'captcha'])->middleware('throttle:20,1');
+        Route::post('send-code', [CabinetAuthController::class, 'sendCode'])->middleware('throttle:3,1');
         Route::post('login', [CabinetAuthController::class, 'login'])->middleware('throttle:5,1');
-        Route::post('remember-password', [CabinetAuthController::class, 'remember'])->middleware('throttle:1,5');
         Route::post('logout', [CabinetAuthController::class, 'logout'])->middleware('throttle:10,1');
         Route::get('dashboard', [CabinetController::class, 'dashboard'])->middleware('throttle:30,1');
         Route::patch('preferences', [CabinetController::class, 'preferences'])->middleware('throttle:10,1');

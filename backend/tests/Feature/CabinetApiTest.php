@@ -18,10 +18,94 @@ class CabinetApiTest extends TestCase
         config(['agbis.base_url' => 'https://example.test/api/']);
     }
 
-    public function test_existing_phone_moves_to_password_without_exposing_agbis_data(): void
+    public function test_captcha_is_proxied_and_its_agbis_id_never_reaches_the_browser(): void
     {
         Http::fake([
-            '*' => Http::response([
+            'https://himinfo.ru/*' => Http::response('PNG-BYTES', 200, [
+                'Content-Type' => 'image/png',
+                'Set-Cookie' => 'CaptchaID=server-guid-1234; Path=/',
+            ]),
+        ]);
+
+        $response = $this->getJson('/api/v1/cabinet/captcha')->assertOk();
+
+        $this->assertStringStartsWith('data:image/png;base64,', $response->json('image'));
+        $this->assertSame('PNG-BYTES', base64_decode(explode(',', $response->json('image'))[1]));
+        $response->assertJsonMissing(['id' => 'server-guid-1234']);
+        $this->assertStringNotContainsString('server-guid-1234', $response->getContent());
+    }
+
+    public function test_send_code_passes_captcha_id_to_agbis_as_a_cookie(): void
+    {
+        Http::fake([
+            'https://himinfo.ru/*' => Http::response('PNG', 200, ['Set-Cookie' => 'CaptchaID=guid-42; Path=/']),
+            'https://example.test/*' => Http::response(['error' => 0, 'Msg' => rawurlencode('СМС сообщение с кодом отправлено')]),
+        ]);
+
+        $token = $this->getJson('/api/v1/cabinet/captcha')->json('token');
+
+        $this->postJson('/api/v1/cabinet/send-code', [
+            'phone' => '+79990000000',
+            'captcha_token' => $token,
+            'captcha_value' => 'аб12в',
+            'mode' => 'register',
+            'consent' => true,
+        ])->assertOk()->assertJsonPath('state', 'sent');
+
+        Http::assertSent(fn ($request): bool => str_contains($request->url(), 'ModernRegistrationVerified=')
+            && str_contains($request->url(), 'CaptchaValue=')
+            && str_contains($request->header('Cookie')[0] ?? '', 'CaptchaID=guid-42'));
+    }
+
+    public function test_used_captcha_token_cannot_be_replayed(): void
+    {
+        Http::fake([
+            'https://himinfo.ru/*' => Http::response('PNG', 200, ['Set-Cookie' => 'CaptchaID=guid-99; Path=/']),
+            'https://example.test/*' => Http::response(['error' => 0, 'Msg' => rawurlencode('Отправлено')]),
+        ]);
+
+        $token = $this->getJson('/api/v1/cabinet/captcha')->json('token');
+        $payload = [
+            'phone' => '+79990000000',
+            'captcha_token' => $token,
+            'captcha_value' => 'аб12в',
+            'mode' => 'register',
+            'consent' => true,
+        ];
+
+        $this->postJson('/api/v1/cabinet/send-code', $payload)->assertOk();
+        $this->postJson('/api/v1/cabinet/send-code', $payload)
+            ->assertStatus(422)
+            ->assertJsonPath('retry_captcha', true);
+    }
+
+    public function test_registration_refusal_from_agbis_is_shown_to_the_client(): void
+    {
+        Http::fake([
+            'https://himinfo.ru/*' => Http::response('PNG', 200, ['Set-Cookie' => 'CaptchaID=guid-7; Path=/']),
+            'https://example.test/*' => Http::response([
+                'error' => 403,
+                'Msg' => 'Этот способ регистрации отключён',
+            ], 403),
+        ]);
+
+        $token = $this->getJson('/api/v1/cabinet/captcha')->json('token');
+
+        $this->postJson('/api/v1/cabinet/send-code', [
+            'phone' => '+79990000000',
+            'captcha_token' => $token,
+            'captcha_value' => 'аб12в',
+            'mode' => 'register',
+            'consent' => true,
+        ])->assertStatus(422)
+            ->assertJsonPath('message', 'Этот способ регистрации отключён');
+    }
+
+    public function test_known_phone_is_told_it_already_has_a_password(): void
+    {
+        Http::fake([
+            'https://himinfo.ru/*' => Http::response('PNG', 200, ['Set-Cookie' => 'CaptchaID=guid-8; Path=/']),
+            'https://example.test/*' => Http::response([
                 'error' => 1,
                 'Msg' => rawurlencode('Данный номер телефона уже зарегистрирован'),
                 'contr_id' => '10012220',
@@ -29,26 +113,17 @@ class CabinetApiTest extends TestCase
             ]),
         ]);
 
-        $this->postJson('/api/v1/cabinet/identify', [
+        $token = $this->getJson('/api/v1/cabinet/captcha')->json('token');
+
+        $this->postJson('/api/v1/cabinet/send-code', [
             'phone' => '+79263314618',
+            'captcha_token' => $token,
+            'captcha_value' => 'аб12в',
+            'mode' => 'register',
             'consent' => true,
         ])->assertOk()
-            ->assertJsonPath('state', 'password')
+            ->assertJsonPath('state', 'has_password')
             ->assertJsonMissing(['contr_id' => '10012220']);
-    }
-
-    public function test_new_phone_receives_sms_password_step(): void
-    {
-        Http::fake(['*' => Http::response(['error' => 0, 'Msg' => rawurlencode('СМС сообщение с кодом отправлено')])]);
-
-        $this->postJson('/api/v1/cabinet/identify', [
-            'phone' => '+79990000000',
-            'consent' => true,
-        ])->assertOk()
-            ->assertJsonPath('state', 'password')
-            ->assertJsonPath('is_new', true);
-
-        Http::assertSent(fn ($request): bool => str_contains($request->url(), 'ModernRegistration='));
     }
 
     public function test_login_stores_only_hashed_browser_token_and_encrypted_agbis_session(): void

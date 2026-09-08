@@ -8,45 +8,95 @@ use App\Models\CabinetSession;
 use App\Services\AgbisClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class CabinetAuthController extends Controller
 {
-    public function identify(Request $request, AgbisClient $agbis): JsonResponse
+    /**
+     * Картинка с кодом. AGBIS отдаёт метку в cookie на своём домене, а ходим
+     * к нему мы с сервера — поэтому метку держим у себя, а браузеру выдаём
+     * только одноразовый ключ к ней.
+     */
+    public function captcha(AgbisClient $agbis): JsonResponse
     {
-        $data = $request->validate([
-            'phone' => ['required', 'string', 'regex:/^\+7\d{10}$/'],
-            'consent' => ['accepted'],
-        ]);
-
         try {
-            $result = $agbis->modernRegistration($data['phone']);
+            $captcha = $agbis->captcha();
         } catch (AgbisException $exception) {
             return response()->json(['message' => $exception->getMessage()], 503);
         }
 
-        $message = mb_strtolower((string) ($result['Msg'] ?? ''));
-        $exists = (string) ($result['exists'] ?? '') === '1'
-            || str_contains($message, 'уже зарегистрирован');
+        $key = Str::random(48);
+        Cache::put($this->captchaKey($key), $captcha['id'], config('agbis.captcha_ttl'));
 
-        if ($exists) {
+        return response()->json([
+            'token' => $key,
+            'image' => 'data:'.$captcha['type'].';base64,'.base64_encode($captcha['image']),
+            'expires_in' => config('agbis.captcha_ttl'),
+        ]);
+    }
+
+    /**
+     * Выдать пароль: первый вход или забытый пароль. Обе команды AGBIS
+     * закрыты капчей, и метка сгорает после первой же проверки — поэтому
+     * на каждую попытку нужна своя картинка.
+     */
+    public function sendCode(Request $request, AgbisClient $agbis): JsonResponse
+    {
+        $data = $request->validate([
+            'phone' => ['required', 'string', 'regex:/^\+7\d{10}$/'],
+            'captcha_token' => ['required', 'string', 'size:48'],
+            'captcha_value' => ['required', 'string', 'max:16'],
+            'mode' => ['required', 'in:register,reset'],
+            'consent' => ['accepted'],
+        ]);
+
+        $captchaId = Cache::pull($this->captchaKey($data['captcha_token']));
+
+        if (! is_string($captchaId)) {
             return response()->json([
-                'state' => 'password',
-                'message' => 'Номер найден. Введите пароль от личного кабинета.',
+                'message' => 'Код с картинки устарел. Обновите картинку и попробуйте ещё раз.',
+                'retry_captcha' => true,
+            ], 422);
+        }
+
+        try {
+            $result = $data['mode'] === 'reset'
+                ? $agbis->rememberVerified($data['phone'], $captchaId, $data['captcha_value'])
+                : $agbis->registerVerified($data['phone'], $captchaId, $data['captcha_value']);
+        } catch (AgbisException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'retry_captcha' => true,
+            ], $exception->fromAgbis ? 422 : 503);
+        }
+
+        // 116 — код с картинки не сошёлся. Картинка уже сгорела, нужна новая.
+        if ((int) ($result['error'] ?? 0) === 116) {
+            return response()->json([
+                'message' => $result['Msg'] ?? 'Код с картинки введён неверно.',
+                'retry_captcha' => true,
+            ], 422);
+        }
+
+        if ((string) ($result['exists'] ?? '') === '1') {
+            return response()->json([
+                'state' => 'has_password',
+                'message' => 'У этого номера уже есть пароль от кабинета. Введите его или запросите новый.',
             ]);
         }
 
-        if ((int) ($result['error'] ?? 1) === 0) {
+        if ((int) ($result['error'] ?? 1) !== 0) {
             return response()->json([
-                'state' => 'password',
-                'is_new' => true,
-                'message' => 'Код-пароль отправлен в SMS. Введите его, чтобы открыть кабинет.',
-            ]);
+                'message' => $result['Msg'] ?? 'Не удалось отправить код.',
+                'retry_captcha' => true,
+            ], 422);
         }
 
         return response()->json([
-            'message' => $result['Msg'] ?? 'Не удалось проверить номер телефона.',
-        ], 422);
+            'state' => 'sent',
+            'message' => $result['Msg'] ?: 'Код-пароль отправлен в SMS.',
+        ]);
     }
 
     public function login(Request $request, AgbisClient $agbis): JsonResponse
@@ -95,27 +145,6 @@ class CabinetAuthController extends Controller
             );
     }
 
-    public function remember(Request $request, AgbisClient $agbis): JsonResponse
-    {
-        $data = $request->validate([
-            'phone' => ['required', 'string', 'regex:/^\+7\d{10}$/'],
-        ]);
-
-        try {
-            $result = $agbis->rememberPassword($data['phone']);
-        } catch (AgbisException $exception) {
-            return response()->json(['message' => $exception->getMessage()], 503);
-        }
-
-        if ((int) ($result['error'] ?? 1) !== 0) {
-            return response()->json([
-                'message' => $result['Msg'] ?? 'Не удалось отправить новый пароль.',
-            ], 422);
-        }
-
-        return response()->json(['message' => 'Новый код-пароль отправлен в SMS.']);
-    }
-
     public function logout(Request $request, AgbisClient $agbis): JsonResponse
     {
         $session = CabinetSession::fromRequest($request);
@@ -132,5 +161,10 @@ class CabinetAuthController extends Controller
 
         return response()->json(['message' => 'Вы вышли из кабинета.'])
             ->withoutCookie(config('agbis.cookie'));
+    }
+
+    private function captchaKey(string $token): string
+    {
+        return 'cabinet:captcha:'.$token;
     }
 }
