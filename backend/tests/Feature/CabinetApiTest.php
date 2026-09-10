@@ -19,6 +19,39 @@ class CabinetApiTest extends TestCase
         config(['agbis.base_url' => 'https://example.test/api/']);
     }
 
+    public function test_issued_order_is_not_labelled_as_ready_for_pickup(): void
+    {
+        $token = str_repeat('h', 80);
+        CabinetSession::query()->create([
+            'token_hash' => hash('sha256', $token),
+            'agbis_session' => 'AGBIS-SESSION',
+            'contr_id' => '10012220',
+            'phone' => '+79263314618',
+            'last_seen_at' => now(),
+            'expires_at' => now()->addDay(),
+        ]);
+
+        Http::fakeSequence()
+            ->push(['error' => 0, 'orders' => [
+                ['dor_id' => '1', 'doc_num' => 'A-1', 'status' => '3'],
+            ]])
+            ->push(['error' => 0, 'orders_history' => [
+                ['dor_id' => '2', 'doc_num' => 'A-2', 'status' => '5'],
+                ['dor_id' => '3', 'doc_num' => 'A-3', 'status' => '7'],
+            ]])
+            ->push(['error' => 0, 'Name' => rawurlencode('Максим')])
+            ->push(['error' => 0, 'order_services' => []])
+            ->push(['error' => 0, 'photos' => []]);
+
+        $this->withToken($token)
+            ->getJson('/api/v1/cabinet/dashboard')
+            ->assertOk()
+            ->assertJsonPath('orders.0.status.label', 'В работе')
+            ->assertJsonPath('history.0.status.code', 'issued')
+            ->assertJsonPath('history.0.status.label', 'Выдан')
+            ->assertJsonPath('history.1.status.label', 'Отменён');
+    }
+
     public function test_unavailable_agbis_is_not_shown_as_an_empty_cabinet(): void
     {
         $session = CabinetSession::query()->create([

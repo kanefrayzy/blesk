@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CabinetPreference;
 use App\Models\CabinetSession;
 use App\Services\AgbisClient;
+use App\Services\PhotoScaler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -124,7 +125,7 @@ class CabinetController extends Controller
         return response()->json(['message' => 'Настройки сохранены.']);
     }
 
-    public function photo(Request $request, string $photoId, AgbisClient $agbis): Response|JsonResponse
+    public function photo(Request $request, string $photoId, AgbisClient $agbis, PhotoScaler $scaler): Response|JsonResponse
     {
         $session = CabinetSession::fromRequest($request);
 
@@ -143,9 +144,16 @@ class CabinetController extends Controller
             return response()->json(['message' => 'Не удалось загрузить фотографию.'], 503);
         }
 
-        return response($photo->body(), 200, [
-            'Content-Type' => $photo->header('Content-Type', 'image/png'),
-            'Cache-Control' => 'private, max-age=300',
+        $image = $scaler->scale(
+            $photo->body(),
+            $request->query('size') === 'thumb' ? PhotoScaler::THUMB : PhotoScaler::FULL,
+        );
+
+        return response($image['body'], 200, [
+            // Тип берём из самих байтов: AGBIS объявляет PNG, а присылает JPEG.
+            'Content-Type' => $image['type'],
+            // Фотопротокол снимают один раз при приёмке и больше не меняют.
+            'Cache-Control' => 'private, max-age=86400',
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }
@@ -190,7 +198,7 @@ class CabinetController extends Controller
             $items[] = [
                 'id' => $id,
                 'name' => preg_replace('/^А\s+/u', '', trim((string) ($service['name'] ?? $service['service'] ?? 'Изделие'))),
-                'status' => $this->publicStatus((string) ($service['status_name'] ?? $order['condition_name'] ?? '')),
+                'status' => $this->itemStatus((string) ($service['status_name'] ?? $order['condition_name'] ?? '')),
                 'price' => $this->number($service['kredit'] ?? $service['price'] ?? 0),
                 'discount' => $this->number($service['discount'] ?? 0),
                 'details' => $addons,
@@ -208,7 +216,7 @@ class CabinetController extends Controller
             'number' => (string) ($order['doc_num'] ?? '—'),
             'created_at' => (string) ($order['doc_date'] ?? $order['date'] ?? ''),
             'ready_at' => (string) ($order['date_out'] ?? ''),
-            'status' => $this->publicStatus((string) ($order['condition_name'] ?? $order['status_name'] ?? $order['status'] ?? '')),
+            'status' => $this->orderStatus($order),
             'amount' => $amount,
             'paid' => $this->number($order['debet'] ?? 0),
             'pickup' => trim((string) ($order['sclad_name'] ?? $order['sclad_to_name'] ?? 'Энергетическая, 9')),
@@ -216,7 +224,42 @@ class CabinetController extends Controller
         ];
     }
 
-    private function publicStatus(string $source): array
+    /**
+     * Состояние заказа целиком. Числовой статус AGBIS надёжнее названия
+     * состояния: состояния настраивает химчистка и называет как хочет.
+     *
+     * @param  array<string, mixed>  $order
+     * @return array{code: string, label: string}
+     */
+    private function orderStatus(array $order): array
+    {
+        $code = (string) ($order['status'] ?? '');
+
+        if (ctype_digit($code)) {
+            // 1 новый, 2 на хранении, 3 в исполнении, 4 исполнен,
+            // 5 выдан, 6 закрыт, 7 отменён.
+            return match (true) {
+                (int) $code === 7 => ['code' => 'cancelled', 'label' => 'Отменён'],
+                (int) $code >= 5 => ['code' => 'issued', 'label' => 'Выдан'],
+                (int) $code === 4 => ['code' => 'ready', 'label' => 'Готов к выдаче'],
+                default => ['code' => 'in_work', 'label' => 'В работе'],
+            };
+        }
+
+        $source = (string) ($order['condition_name'] ?? $order['status_name'] ?? '');
+
+        return match (true) {
+            preg_match('/отмен/ui', $source) === 1 => ['code' => 'cancelled', 'label' => 'Отменён'],
+            preg_match('/выдан|закрыт/ui', $source) === 1 => ['code' => 'issued', 'label' => 'Выдан'],
+            preg_match('/готов|выполнен|исполнен/ui', $source) === 1 => ['code' => 'ready', 'label' => 'Готов к выдаче'],
+            default => ['code' => 'in_work', 'label' => 'В работе'],
+        };
+    }
+
+    /**
+     * @return array{code: string, label: string}
+     */
+    private function itemStatus(string $source): array
     {
         $ready = preg_match('/готов|выдан|закрыт|выполнен|исполнен/ui', $source) === 1
             || (ctype_digit($source) && (int) $source >= 4);

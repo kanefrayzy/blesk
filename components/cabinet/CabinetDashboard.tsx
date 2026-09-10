@@ -28,7 +28,7 @@ import {
 } from 'lucide-react'
 import { OrderForm } from '@/components/order/OrderForm'
 
-type PublicStatus = { code: 'ready' | 'in_work'; label: string }
+type PublicStatus = { code: 'in_work' | 'ready' | 'issued' | 'cancelled'; label: string }
 type Detail = { label: string; value: string }
 type Photo = { id: string; service_id: string }
 type OrderItem = { id: string; name: string; status: PublicStatus; price: number; discount: number; details: Detail[]; photos: Photo[] }
@@ -100,11 +100,19 @@ async function updatePushSubscription(enabled: boolean) {
   if (!response.ok) throw new Error(result.message || 'Не удалось включить push-уведомления.')
 }
 
+const statusTone: Record<PublicStatus['code'], { pill: string; dot: string }> = {
+  ready: { pill: 'bg-teal/10 text-teal', dot: 'bg-teal' },
+  in_work: { pill: 'bg-bone/65 text-navy', dot: 'bg-[#b58b4b]' },
+  // Выданный и отменённый — уже история, поэтому приглушены.
+  issued: { pill: 'bg-mist text-slate', dot: 'bg-slate-soft' },
+  cancelled: { pill: 'bg-mist text-slate', dot: 'bg-slate-soft' },
+}
+
 function StatusPill({ status }: { status: PublicStatus }) {
-  const ready = status.code === 'ready'
+  const tone = statusTone[status.code] ?? statusTone.in_work
   return (
-    <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[0.75rem] font-bold ${ready ? 'bg-teal/10 text-teal' : 'bg-bone/65 text-navy'}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${ready ? 'bg-teal' : 'bg-[#b58b4b]'}`} />
+    <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[0.75rem] font-bold ${tone.pill}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
       {status.label}
     </span>
   )
@@ -115,11 +123,11 @@ function EmptyOrders({ onBook, archive = false }: { onBook?: () => void; archive
     <div className="rounded-[1.75rem] border border-dashed border-slate-soft/35 bg-white px-6 py-12 text-center">
       <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-cream text-teal"><Sparkles className="h-6 w-6" /></span>
       <h3 className="mt-5 font-display text-xl font-bold text-navy">
-        {archive ? 'Выданных заказов пока нет' : 'Сейчас нет заказов в работе'}
+        {archive ? 'Заказов пока нет' : 'Сейчас нет заказов в работе'}
       </h3>
       <p className="mx-auto mt-2 max-w-[32rem] text-[0.875rem] leading-relaxed text-slate">
         {archive
-          ? 'Сюда попадают заказы после выдачи. Те, что сейчас в работе, — на вкладке «Мои заказы».'
+          ? 'Здесь появятся все ваши заказы — и те, что в работе, и уже выданные.'
           : 'Когда вы сдадите вещи в «Блеск», заказ появится здесь автоматически.'}
       </p>
       {onBook ? (
@@ -174,7 +182,7 @@ function ItemCard({ item, orderId, index, onOpenPhoto }: { item: OrderItem; orde
                 {item.photos.map((photo) => (
                   <button key={photo.id} type="button" onClick={() => onOpenPhoto({ photos: item.photos, itemName: item.name, orderId, index: item.photos.indexOf(photo) })} aria-label={`Открыть фото позиции «${item.name}»`} className="relative block h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-mist">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/api/v1/cabinet/photos/${photo.id}?service=${photo.service_id}`} alt={`Фото позиции «${item.name}» из заказа ${orderId}`} className="h-full w-full object-cover transition hover:scale-105" />
+                    <img src={`/api/v1/cabinet/photos/${photo.id}?service=${photo.service_id}&size=thumb`} alt={`Фото позиции «${item.name}» из заказа ${orderId}`} loading="lazy" className="h-full w-full object-cover transition hover:scale-105" />
                   </button>
                 ))}
               </div>
@@ -241,14 +249,20 @@ function CurrentOrder({ order, onOpenPhoto }: { order: Order; onOpenPhoto: (view
   )
 }
 
-function HistoryView({ orders, onBook }: { orders: Order[]; onBook: () => void }) {
+function HistoryView({ active, orders, onBook }: { active: Order[]; orders: Order[]; onBook: () => void }) {
+  // Активные показываем здесь же: история без них выглядит неполной, а сравнить
+  // «что было» и «что сейчас» удобнее в одном списке. Дедупликация на случай,
+  // если AGBIS вернёт заказ в обоих ответах.
+  const seen = new Set(active.map((order) => order.id))
+  const all = [...active, ...orders.filter((order) => !seen.has(order.id))]
+
   return (
     <section>
       <p className="label text-teal">Архив</p>
       <h2 className="mt-3 font-display text-3xl font-bold tracking-[-.03em] text-navy sm:text-4xl">История заказов</h2>
       <p className="mt-3 text-[0.875rem] text-slate">Заказы за последний год по данным AGBIS.</p>
       <div className="mt-8 grid gap-3">
-        {orders.length ? orders.map((order) => (
+        {all.length ? all.map((order) => (
           <article key={order.id} className="grid gap-4 rounded-2xl border border-line bg-white p-5 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:px-6">
             <div><p className="font-display text-base font-bold text-navy">Заказ № {order.number}</p><p className="mt-1 text-[0.75rem] text-slate-soft">{order.created_at} · {order.items.length} поз.</p></div>
             <StatusPill status={order.status} />
@@ -376,7 +390,7 @@ function PhotoModal({ viewer, onChange, onClose }: { viewer: PhotoViewer; onChan
           {viewer.photos.map((thumb, index) => (
             <button key={thumb.id} type="button" onClick={() => onChange(index)} aria-label={`Фото ${index + 1}`} className={`h-14 w-14 shrink-0 overflow-hidden rounded-xl border-2 transition ${index === viewer.index ? 'border-teal' : 'border-transparent opacity-55'}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/api/v1/cabinet/photos/${thumb.id}?service=${thumb.service_id}`} alt="" className="h-full w-full object-cover" />
+              <img src={`/api/v1/cabinet/photos/${thumb.id}?service=${thumb.service_id}&size=thumb`} alt="" loading="lazy" className="h-full w-full object-cover" />
             </button>
           ))}
         </div>
@@ -489,7 +503,7 @@ export function CabinetDashboard() {
         <div className="mx-auto max-w-[82rem] px-4 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-7 sm:pt-8 lg:px-10 lg:py-12">
           {error && <div className="mb-6 rounded-xl border border-destructive/20 bg-white px-4 py-3 text-[0.8125rem] text-destructive">{error}</div>}
           {view === 'orders' && <section><div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8"><div><p className="label text-teal">Добрый день{greeting ? `, ${greeting}` : ''}</p><h1 className="mt-2 font-display text-[2rem] font-bold tracking-[-.035em] text-navy sm:mt-3 sm:text-5xl">Ваши заказы</h1></div><div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[0.6875rem] text-slate-soft shadow-sm sm:text-[0.75rem]"><Clock3 className="h-3.5 w-3.5 text-teal sm:h-4 sm:w-4" /> Данные из AGBIS</div></div><div className="grid gap-6">{data.orders.length ? data.orders.map((order) => <CurrentOrder key={order.id} order={order} onOpenPhoto={setPhotoViewer} />) : <EmptyOrders onBook={() => setBookingOpen(true)} />}</div></section>}
-          {view === 'history' && <HistoryView orders={data.history} onBook={() => setBookingOpen(true)} />}
+          {view === 'history' && <HistoryView active={data.orders} orders={data.history} onBook={() => setBookingOpen(true)} />}
           {view === 'settings' && <SettingsView dashboard={data} onSaved={(preferences) => setData({ ...data, preferences })} onLogout={logout} />}
         </div>
       </div>
