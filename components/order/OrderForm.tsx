@@ -119,6 +119,9 @@ export function OrderForm({ initialContact }: OrderFormProps = {}) {
       if (!response.ok) throw new Error('request_failed')
 
       setRequestState('success')
+      // Форма уходит через ajax, поэтому цель считаем по факту приёма заявки,
+      // а не по нажатию: иначе в отчёт попадут и те, у кого отправка не прошла.
+      reachGoal('click')
       reachGoal('online_order_sent')
     } catch {
       setRequestState('error')
