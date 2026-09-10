@@ -31,7 +31,7 @@ class CheckCabinetOrders extends Command
                     ->latest('last_seen_at')
                     ->first();
 
-                if (! $session) {
+                if (! $session || ! $this->isDue($preference)) {
                     return;
                 }
 
@@ -67,12 +67,38 @@ class CheckCabinetOrders extends Command
                     }
                 }
 
-                $preference->forceFill(['last_orders_state' => $state])->save();
+                $preference->forceFill([
+                    'last_orders_state' => $state,
+                    'last_checked_at' => now(),
+                ])->save();
             });
 
         CabinetSession::query()->where('expires_at', '<=', now())->delete();
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Часто спрашиваем только про тех, у кого есть вещи в работе: именно у них
+     * статус может измениться. Остальных — раз в час, чтобы заметитьновый заказ,
+     * не упираясь в ограничение AGBIS на частоту запросов.
+     */
+    private function isDue(CabinetPreference $preference): bool
+    {
+        $state = $preference->last_orders_state;
+
+        if (! is_array($state)) {
+            return true;
+        }
+
+        foreach ($state as $order) {
+            if (($order['ready'] ?? false) === false) {
+                return true;
+            }
+        }
+
+        return $preference->last_checked_at === null
+            || $preference->last_checked_at->lte(now()->subHour());
     }
 
     /**

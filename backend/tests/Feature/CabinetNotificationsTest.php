@@ -130,6 +130,43 @@ class CabinetNotificationsTest extends TestCase
         Mail::assertSent(OrderStatusChanged::class, fn (OrderStatusChanged $mail): bool => $mail->heading === 'Заказ № 001001-1 принят');
     }
 
+    public function test_client_without_work_in_progress_is_not_asked_every_run(): void
+    {
+        $quiet = ['500' => ['number' => '000987-2', 'ready' => true, 'ready_at' => '']];
+        $preference = $this->subscriber($quiet);
+        $preference->forceFill(['last_checked_at' => now()->subMinutes(10)])->save();
+
+        Http::fake(['*' => Http::response(['error' => 0, 'orders' => []])]);
+
+        $this->artisan('cabinet:check-orders')->assertSuccessful();
+
+        Http::assertNothingSent();
+    }
+
+    public function test_client_with_work_in_progress_is_asked_every_run(): void
+    {
+        $preference = $this->subscriber(['500' => ['number' => '000987-2', 'ready' => false, 'ready_at' => '']]);
+        $preference->forceFill(['last_checked_at' => now()->subMinute()])->save();
+
+        Http::fake(['*' => Http::response(['error' => 0, 'orders' => []])]);
+
+        $this->artisan('cabinet:check-orders')->assertSuccessful();
+
+        Http::assertSentCount(1);
+    }
+
+    public function test_quiet_client_is_still_checked_once_an_hour(): void
+    {
+        $preference = $this->subscriber([]);
+        $preference->forceFill(['last_checked_at' => now()->subHours(2)])->save();
+
+        Http::fake(['*' => Http::response(['error' => 0, 'orders' => []])]);
+
+        $this->artisan('cabinet:check-orders')->assertSuccessful();
+
+        Http::assertSentCount(1);
+    }
+
     public function test_several_ready_orders_are_listed_in_one_message(): void
     {
         $message = OrderChangeMessage::between(

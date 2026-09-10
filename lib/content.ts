@@ -49,7 +49,7 @@ export const stats = [
     icon: 'value-chestnost.svg',
     value: '20+',
     unit: 'лет опыта',
-    note: 'Более 15 лет опыта у наших сотрудников в сфере химчистки.',
+    note: 'Более 20 лет опыта у наших сотрудников в сфере химчистки.',
   },
   {
     icon: 'value-tehnologichnost.svg',
@@ -203,7 +203,7 @@ export const production = [
   },
   {
     name: 'Профессиональная команда',
-    note: 'Опыт сотрудников более 15 лет',
+    note: 'Опыт сотрудников более 20 лет',
     photo: '/photo/prod-smena.jpg',
   },
   {

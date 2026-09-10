@@ -59,9 +59,31 @@ function applicationServerKey(value: string) {
   return Uint8Array.from(bytes, (character) => character.charCodeAt(0))
 }
 
+/** iPhone и iPad: Safari даёт push только приложению с экрана «Домой». */
+const isApple = () =>
+  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+
+const isInstalled = () =>
+  window.matchMedia('(display-mode: standalone)').matches ||
+  (navigator as Navigator & { standalone?: boolean }).standalone === true
+
+const HOME_SCREEN_HINT =
+  'На iPhone уведомления приходят только из ярлыка: нажмите «Поделиться» → «На экран „Домой“» и откройте «Блеск» с него.'
+
+/** Почему push сейчас недоступен, или null, если всё в порядке. */
+function pushUnavailable(): string | null {
+  if ('serviceWorker' in navigator && 'PushManager' in window) return null
+
+  return isApple() && !isInstalled()
+    ? HOME_SCREEN_HINT
+    : 'Этот браузер не поддерживает push-уведомления.'
+}
+
 async function updatePushSubscription(enabled: boolean) {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    throw new Error('Этот браузер не поддерживает push-уведомления.')
+  const blocked = pushUnavailable()
+  if (blocked) {
+    throw new Error(blocked)
   }
 
   const registration = await navigator.serviceWorker.register('/sw.js')
@@ -290,6 +312,9 @@ function SettingsView({ dashboard, onSaved, onLogout }: { dashboard: Dashboard; 
   const [saving, setSaving] = useState(false)
   const [pushSaving, setPushSaving] = useState(false)
   const [message, setMessage] = useState('')
+  // Считаем после отрисовки: на сервере navigator недоступен.
+  const [pushBlocked, setPushBlocked] = useState<string | null>(null)
+  useEffect(() => setPushBlocked(pushUnavailable()), [])
   async function save(event: FormEvent) {
     event.preventDefault(); setSaving(true); setMessage('')
     try {
@@ -328,8 +353,11 @@ function SettingsView({ dashboard, onSaved, onLogout }: { dashboard: Dashboard; 
       <p className="mt-3 max-w-[42rem] text-[0.875rem] leading-relaxed text-slate">Телефон используется только для входа и SMS от AGBIS. Почту можно добавить здесь по желанию.</p>
       <form onSubmit={save} className="mt-8 max-w-[42rem] rounded-[1.75rem] bg-white p-5 shadow-[0_16px_50px_rgba(14,26,53,.06)] sm:p-7">
         <div className="grid gap-3">
-          <Toggle checked={prefs.push_notifications} onChange={(value) => { if (!pushSaving) void changePush(value) }} label="Push-уведомления" note={pushSaving ? 'Подключаем браузер…' : 'Сообщим, когда статус заказа изменится.'} icon={Bell} />
-          <Toggle checked={prefs.email_notifications} onChange={(value) => setPrefs({ ...prefs, email_notifications: value })} label="Уведомления на почту" note="Сейчас сохраняем выбор; отправка временно работает в режиме журнала." icon={Mail} />
+          <Toggle checked={prefs.push_notifications} onChange={(value) => { if (!pushSaving) void changePush(value) }} label="Push-уведомления" note={pushSaving ? 'Подключаем браузер…' : 'Сообщим, когда заказ будет готов.'} icon={Bell} />
+          {pushBlocked && (
+            <p className="rounded-2xl bg-cream px-4 py-3 text-[0.8125rem] leading-relaxed text-slate">{pushBlocked}</p>
+          )}
+          <Toggle checked={prefs.email_notifications} onChange={(value) => setPrefs({ ...prefs, email_notifications: value })} label="Уведомления на почту" note="Письмо о готовности заказа на указанный адрес." icon={Mail} />
         </div>
         {prefs.email_notifications && (
           <div className="mt-5">
