@@ -121,11 +121,6 @@ class CabinetController extends Controller
             ],
         );
 
-        // Пока SMTP не подключён: фиксируем событие без адреса и персональных данных.
-        if ($preference->email_notifications) {
-            Log::info('Cabinet email notifications enabled', ['contr_id' => $session->contr_id]);
-        }
-
         return response()->json(['message' => 'Настройки сохранены.']);
     }
 

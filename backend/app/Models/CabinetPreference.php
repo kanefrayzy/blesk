@@ -11,7 +11,7 @@ class CabinetPreference extends Model
         'email',
         'email_notifications',
         'push_notifications',
-        'last_order_signature',
+        'last_orders_state',
     ];
 
     protected function casts(): array
@@ -20,6 +20,7 @@ class CabinetPreference extends Model
             'email' => 'encrypted',
             'email_notifications' => 'boolean',
             'push_notifications' => 'boolean',
+            'last_orders_state' => 'array',
         ];
     }
 }

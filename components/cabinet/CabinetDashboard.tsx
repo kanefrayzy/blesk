@@ -110,12 +110,18 @@ function StatusPill({ status }: { status: PublicStatus }) {
   )
 }
 
-function EmptyOrders({ onBook }: { onBook?: () => void }) {
+function EmptyOrders({ onBook, archive = false }: { onBook?: () => void; archive?: boolean }) {
   return (
     <div className="rounded-[1.75rem] border border-dashed border-slate-soft/35 bg-white px-6 py-12 text-center">
       <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-cream text-teal"><Sparkles className="h-6 w-6" /></span>
-      <h3 className="mt-5 font-display text-xl font-bold text-navy">Сейчас нет заказов в работе</h3>
-      <p className="mx-auto mt-2 max-w-[32rem] text-[0.875rem] leading-relaxed text-slate">Когда вы сдадите вещи в «Блеск», заказ появится здесь автоматически.</p>
+      <h3 className="mt-5 font-display text-xl font-bold text-navy">
+        {archive ? 'Выданных заказов пока нет' : 'Сейчас нет заказов в работе'}
+      </h3>
+      <p className="mx-auto mt-2 max-w-[32rem] text-[0.875rem] leading-relaxed text-slate">
+        {archive
+          ? 'Сюда попадают заказы после выдачи. Те, что сейчас в работе, — на вкладке «Мои заказы».'
+          : 'Когда вы сдадите вещи в «Блеск», заказ появится здесь автоматически.'}
+      </p>
       {onBook ? (
         <button type="button" onClick={onBook} className="mt-6 inline-flex h-11 items-center rounded-full bg-navy px-5 font-display text-[0.8125rem] font-bold text-white">Записаться онлайн</button>
       ) : (
@@ -248,7 +254,7 @@ function HistoryView({ orders, onBook }: { orders: Order[]; onBook: () => void }
             <StatusPill status={order.status} />
             <p className="font-display text-base font-bold text-navy sm:min-w-28 sm:text-right">{money(order.amount)}</p>
           </article>
-        )) : <EmptyOrders onBook={onBook} />}
+        )) : <EmptyOrders onBook={onBook} archive />}
       </div>
     </section>
   )
