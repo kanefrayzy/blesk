@@ -26,6 +26,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('logout', [CabinetAuthController::class, 'logout'])->middleware('throttle:10,1');
         Route::get('dashboard', [CabinetController::class, 'dashboard'])->middleware('throttle:30,1');
         Route::patch('preferences', [CabinetController::class, 'preferences'])->middleware('throttle:10,1');
+        Route::post('notifications-prompt/dismiss', [CabinetController::class, 'dismissNotificationsPrompt'])->middleware('throttle:10,1');
         Route::get('photos/{photoId}', [CabinetController::class, 'photo'])->middleware('throttle:60,1');
         Route::get('push/config', [PushSubscriptionController::class, 'config'])->middleware('throttle:30,1');
         Route::post('push/subscriptions', [PushSubscriptionController::class, 'store'])->middleware('throttle:10,1');

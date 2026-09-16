@@ -96,6 +96,7 @@ class CabinetController extends Controller
                 'email_notifications' => $preference->email_notifications,
                 'push_notifications' => $preference->push_notifications,
             ],
+            'offer_notifications' => $preference->shouldOfferNotifications(),
         ]);
     }
 
@@ -123,6 +124,22 @@ class CabinetController extends Controller
         );
 
         return response()->json(['message' => 'Настройки сохранены.']);
+    }
+
+    public function dismissNotificationsPrompt(Request $request): JsonResponse
+    {
+        $session = CabinetSession::fromRequest($request);
+
+        if (! $session) {
+            return response()->json(['message' => 'Сессия истекла. Войдите ещё раз.'], 401);
+        }
+
+        CabinetPreference::query()->updateOrCreate(
+            ['contr_id' => $session->contr_id],
+            ['notifications_prompt_dismissed_at' => now()],
+        );
+
+        return response()->json(['message' => 'Напомним позже.']);
     }
 
     public function photo(Request $request, string $photoId, AgbisClient $agbis, PhotoScaler $scaler): Response|JsonResponse

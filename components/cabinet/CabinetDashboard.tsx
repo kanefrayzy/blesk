@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   Bell,
   CalendarPlus,
@@ -27,6 +27,7 @@ import {
   X,
 } from 'lucide-react'
 import { OrderForm } from '@/components/order/OrderForm'
+import { reachGoal } from '@/lib/metrics'
 
 type PublicStatus = { code: 'in_work' | 'ready' | 'issued' | 'cancelled'; label: string }
 type Detail = { label: string; value: string }
@@ -38,6 +39,7 @@ type Dashboard = {
   orders: Order[]
   history: Order[]
   preferences: { email: string | null; email_notifications: boolean; push_notifications: boolean }
+  offer_notifications: boolean
 }
 type View = 'orders' | 'history' | 'settings'
 type PhotoViewer = { photos: Photo[]; itemName: string; orderId: string; index: number }
@@ -120,6 +122,155 @@ async function updatePushSubscription(enabled: boolean) {
   })
   const result = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(result.message || 'Не удалось включить push-уведомления.')
+}
+
+async function savePreferences(prefs: Dashboard['preferences']) {
+  const response = await fetch('/api/v1/cabinet/preferences', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(prefs),
+  })
+  const payload = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(payload.message || 'Не удалось сохранить настройки.')
+}
+
+type PromptMode = 'push' | 'email' | 'done'
+
+/**
+ * Предложение включить уведомления на первом экране: в профиль заходят
+ * немногие. Системный запрос браузера — только по нажатию: спросить сразу
+ * значит получить рефлекторное «Блокировать», после которого спросить
+ * повторно уже нельзя.
+ */
+function NotificationsPrompt({ orders, preferences, onSaved, onClose }: {
+  orders: Order[]
+  preferences: Dashboard['preferences']
+  onSaved: (prefs: Dashboard['preferences']) => void
+  onClose: () => void
+}) {
+  const [mode, setMode] = useState<PromptMode | null>(null)
+  const [email, setEmail] = useState(preferences.email ?? '')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [appleHint, setAppleHint] = useState(false)
+
+  // На сервере нет navigator. Push не предлагаем, если браузер его не умеет
+  // или человек уже запретил сайту уведомления — кнопка ничего бы не сделала.
+  useEffect(() => {
+    const unavailable = pushUnavailable()
+    const denied = !unavailable && 'Notification' in window && Notification.permission === 'denied'
+    setAppleHint(unavailable === HOME_SCREEN_HINT)
+    setMode(unavailable || denied ? 'email' : 'push')
+  }, [])
+
+  const order = orders.find((item) => item.status.code === 'in_work') ?? orders[0]
+  const title = order
+    ? `Узнайте первым, когда заказ № ${order.number} будет готов`
+    : 'Сообщим, когда вещи будут готовы'
+
+  async function enablePush() {
+    setBusy(true); setError('')
+    try {
+      await updatePushSubscription(true)
+      const next = { ...preferences, push_notifications: true }
+      await savePreferences(next)
+      onSaved(next)
+      reachGoal('notifications_enabled')
+      setMode('done')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Не удалось включить уведомления.')
+      // Отказ в браузере не тупик: остаётся почта.
+      setMode('email')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function enableEmail(event: FormEvent) {
+    event.preventDefault()
+    setBusy(true); setError('')
+    try {
+      const next = { ...preferences, email: email.trim(), email_notifications: true }
+      await savePreferences(next)
+      onSaved(next)
+      reachGoal('notifications_enabled')
+      setMode('done')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Не удалось сохранить почту.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  function notNow() {
+    onClose()
+    void fetch('/api/v1/cabinet/notifications-prompt/dismiss', { method: 'POST', headers: { Accept: 'application/json' } }).catch(() => null)
+  }
+
+  useEffect(() => {
+    if (mode !== 'done') return
+    const timer = window.setTimeout(onClose, 5000)
+    return () => window.clearTimeout(timer)
+  }, [mode, onClose])
+
+  if (mode === null) return null
+
+  if (mode === 'done') {
+    return (
+      <div role="status" className="flex items-center gap-3 rounded-[1.5rem] bg-teal/10 px-5 py-4 text-[0.875rem] font-semibold text-navy">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal text-white"><Check className="h-4 w-4" /></span>
+        {order ? `Готово, сообщим о заказе № ${order.number}.` : 'Готово, сообщим, когда вещи будут готовы.'}
+      </div>
+    )
+  }
+
+  return (
+    <section aria-label="Уведомления о заказах" className="relative rounded-[1.5rem] bg-navy p-5 text-white sm:p-6">
+      <button type="button" onClick={notNow} aria-label="Не сейчас" className="absolute top-3 right-3 flex h-9 w-9 items-center justify-center rounded-full text-white/50 transition hover:bg-white/10 hover:text-white">
+        <X className="h-4 w-4" />
+      </button>
+
+      <div className="flex gap-4 pr-8">
+        <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-teal sm:flex">
+          {mode === 'push' ? <Bell className="h-5 w-5" /> : <Mail className="h-5 w-5" />}
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display text-[1.0625rem] leading-snug font-bold">{title}</h2>
+          <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-white/65">
+            {mode === 'push'
+              ? 'Пришлём уведомление — не придётся звонить и проверять.'
+              : 'Пришлём письмо, как только вещи можно будет забрать.'}
+          </p>
+
+          {mode === 'push' ? (
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <button type="button" onClick={enablePush} disabled={busy} className="inline-flex h-11 items-center gap-2 rounded-full bg-teal px-5 font-display text-[0.8125rem] font-bold text-white transition hover:bg-teal-hi disabled:opacity-60">
+                {busy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Bell className="h-4 w-4" />}
+                Включить уведомления
+              </button>
+              <button type="button" onClick={() => { setMode('email'); setError('') }} className="text-[0.8125rem] font-semibold text-white/60 transition hover:text-white">
+                Лучше на почту
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={enableEmail} className="mt-4 flex flex-col gap-2 sm:flex-row">
+              <label htmlFor="prompt-email" className="sr-only">Электронная почта</label>
+              <input id="prompt-email" type="email" required autoComplete="email" value={email} onChange={(event) => { setEmail(event.target.value); setError('') }} placeholder="name@example.ru" className="h-11 min-w-0 flex-1 rounded-full border border-white/15 bg-white/10 px-4 text-[0.9375rem] text-white placeholder:text-white/40 focus:border-teal focus:outline-none" />
+              <button disabled={busy} className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-teal px-5 font-display text-[0.8125rem] font-bold text-white transition hover:bg-teal-hi disabled:opacity-60">
+                {busy && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                Сообщать на почту
+              </button>
+            </form>
+          )}
+
+          {error && <p role="alert" className="mt-3 text-[0.8125rem] text-white/80">{error}</p>}
+          {mode === 'email' && appleHint && !error && (
+            <p className="mt-3 text-[0.75rem] leading-relaxed text-white/50">{HOME_SCREEN_HINT}</p>
+          )}
+        </div>
+      </div>
+    </section>
+  )
 }
 
 const statusTone: Record<PublicStatus['code'], { pill: string; dot: string }> = {
@@ -331,12 +482,7 @@ function SettingsView({ dashboard, onSaved, onLogout }: { dashboard: Dashboard; 
     try {
       await updatePushSubscription(enabled)
       const next = { ...prefs, push_notifications: enabled }
-      const response = await fetch('/api/v1/cabinet/preferences', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(next),
-      })
-      if (!response.ok) throw new Error('Не удалось сохранить настройку push.')
+      await savePreferences(next)
       setPrefs(next)
       onSaved(next)
       setMessage(enabled ? 'Push-уведомления подключены.' : 'Push-уведомления выключены.')
@@ -435,6 +581,7 @@ export function CabinetDashboard() {
   const [refreshing, setRefreshing] = useState(false)
   const [bookingOpen, setBookingOpen] = useState(false)
   const [photoViewer, setPhotoViewer] = useState<PhotoViewer | null>(null)
+  const [promptClosed, setPromptClosed] = useState(false)
 
   async function load() {
     setRefreshing(true); setError('')
@@ -472,6 +619,8 @@ export function CabinetDashboard() {
       window.removeEventListener('keydown', onKeyDown)
     }
   }, [bookingOpen, photoViewer])
+
+  const closePrompt = useCallback(() => setPromptClosed(true), [])
 
   const greeting = useMemo(() => firstName(data?.profile.name ?? null), [data?.profile.name])
 
@@ -530,7 +679,7 @@ export function CabinetDashboard() {
 
         <div className="mx-auto max-w-[82rem] px-4 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-7 sm:pt-8 lg:px-10 lg:py-12">
           {error && <div className="mb-6 rounded-xl border border-destructive/20 bg-white px-4 py-3 text-[0.8125rem] text-destructive">{error}</div>}
-          {view === 'orders' && <section><div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8"><div><p className="label text-teal">Добрый день{greeting ? `, ${greeting}` : ''}</p><h1 className="mt-2 font-display text-[2rem] font-bold tracking-[-.035em] text-navy sm:mt-3 sm:text-5xl">Ваши заказы</h1></div><div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[0.6875rem] text-slate-soft shadow-sm sm:text-[0.75rem]"><Clock3 className="h-3.5 w-3.5 text-teal sm:h-4 sm:w-4" /> Данные из AGBIS</div></div><div className="grid gap-6">{data.orders.length ? data.orders.map((order) => <CurrentOrder key={order.id} order={order} onOpenPhoto={setPhotoViewer} />) : <EmptyOrders onBook={() => setBookingOpen(true)} />}</div></section>}
+          {view === 'orders' && <section><div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8"><div><p className="label text-teal">Добрый день{greeting ? `, ${greeting}` : ''}</p><h1 className="mt-2 font-display text-[2rem] font-bold tracking-[-.035em] text-navy sm:mt-3 sm:text-5xl">Ваши заказы</h1></div><div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[0.6875rem] text-slate-soft shadow-sm sm:text-[0.75rem]"><Clock3 className="h-3.5 w-3.5 text-teal sm:h-4 sm:w-4" /> Данные из AGBIS</div></div><div className="grid gap-6">{data.offer_notifications && !promptClosed && <NotificationsPrompt orders={data.orders} preferences={data.preferences} onSaved={(preferences) => setData((current) => current && { ...current, preferences })} onClose={closePrompt} />}{data.orders.length ? data.orders.map((order) => <CurrentOrder key={order.id} order={order} onOpenPhoto={setPhotoViewer} />) : <EmptyOrders onBook={() => setBookingOpen(true)} />}</div></section>}
           {view === 'history' && <HistoryView active={data.orders} orders={data.history} onBook={() => setBookingOpen(true)} />}
           {view === 'settings' && <SettingsView dashboard={data} onSaved={(preferences) => setData({ ...data, preferences })} onLogout={logout} />}
         </div>
