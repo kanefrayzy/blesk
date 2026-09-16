@@ -368,23 +368,36 @@ function ItemCard({ item, orderId, index, onOpenPhoto }: { item: OrderItem; orde
 }
 
 function CurrentOrder({ order, onOpenPhoto }: { order: Order; onOpenPhoto: (viewer: PhotoViewer) => void }) {
-  const ready = order.status.code === 'ready'
-  const progress = [
-    { label: 'Принят', done: true },
-    { label: 'В работе', done: true },
-    { label: 'Готов', done: ready },
-  ]
+  const closed = order.status.code === 'issued' || order.status.code === 'cancelled'
+  const ready = order.status.code === 'ready' || order.status.code === 'issued'
+  const progress = order.status.code === 'issued'
+    ? [
+        { label: 'Принят', done: true },
+        { label: 'Готов', done: true },
+        { label: 'Выдан', done: true },
+      ]
+    : [
+        { label: 'Принят', done: true },
+        { label: 'В работе', done: order.status.code !== 'cancelled' },
+        { label: 'Готов', done: ready },
+      ]
+  const heading = {
+    issued: 'Заказ выдан',
+    cancelled: 'Заказ отменён',
+    ready: 'Можно забирать вещи',
+    in_work: 'Мы заботимся о ваших вещах',
+  }[order.status.code]
 
   return (
     <article className="overflow-hidden rounded-[1.75rem] bg-navy text-white shadow-[0_18px_60px_rgba(14,26,53,.12)] sm:rounded-[2rem]">
       <div className="grid lg:grid-cols-[1.2fr_.8fr]">
         <div className="p-5 sm:p-8 lg:p-10">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="label text-teal">Текущий заказ · № {order.number}</p>
+            <p className="label text-teal">{closed ? 'Заказ' : 'Текущий заказ'} · № {order.number}</p>
             <StatusPill status={order.status} />
           </div>
           <h2 className="mt-6 max-w-[18ch] font-display text-[1.75rem] leading-[1.04] font-bold tracking-[-.04em] sm:mt-7 sm:text-[2.5rem] lg:text-[3.2rem]">
-            {ready ? 'Можно забирать вещи' : 'Мы заботимся о ваших вещах'}
+            {heading}
           </h2>
           <div className="mt-7 grid grid-cols-2 gap-x-4 gap-y-5 sm:mt-8 sm:grid-cols-3">
             <div><p className="text-[0.6875rem] text-white/42">Приняли</p><p className="mt-1 text-[0.875rem] font-semibold">{order.created_at || '—'}</p></div>
@@ -422,12 +435,53 @@ function CurrentOrder({ order, onOpenPhoto }: { order: Order; onOpenPhoto: (view
   )
 }
 
-function HistoryView({ active, orders, onBook }: { active: Order[]; orders: Order[]; onBook: () => void }) {
-  // Активные показываем здесь же: история без них выглядит неполной, а сравнить
-  // «что было» и «что сейчас» удобнее в одном списке. Дедупликация на случай,
-  // если AGBIS вернёт заказ в обоих ответах.
+function HistoryView({ active, orders, onBook, onOpenPhoto }: { active: Order[]; orders: Order[]; onBook: () => void; onOpenPhoto: (viewer: PhotoViewer) => void }) {
+  // Активные показываем здесь же: история без них выглядит неполной. Дедупликация
+  // на случай, если AGBIS вернёт заказ в обоих ответах.
   const seen = new Set(active.map((order) => order.id))
   const all = [...active, ...orders.filter((order) => !seen.has(order.id))]
+  const [openId, setOpenId] = useState<string | null>(null)
+  const [photos, setPhotos] = useState<Record<string, Photo[]>>({})
+  const [photosError, setPhotosError] = useState('')
+
+  const opened = all.find((order) => order.id === openId) ?? null
+
+  // Фото выданных заказов не приходят со списком — берём при открытии.
+  useEffect(() => {
+    if (!opened || photos[opened.id] || opened.items.some((item) => item.photos.length)) return
+    let cancelled = false
+    setPhotosError('')
+    fetch(`/api/v1/cabinet/orders/${opened.id}/photos`, { headers: { Accept: 'application/json' } })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!response.ok) throw new Error(payload.message || 'Не удалось загрузить фото.')
+        if (!cancelled) setPhotos((current) => ({ ...current, [opened.id]: payload.photos ?? [] }))
+      })
+      .catch((reason) => { if (!cancelled) setPhotosError(reason instanceof Error ? reason.message : 'Не удалось загрузить фото.') })
+    return () => { cancelled = true }
+  }, [opened, photos])
+
+  function open(id: string | null) {
+    setOpenId(id)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  if (opened) {
+    const loaded = photos[opened.id]
+    const order = loaded
+      ? { ...opened, items: opened.items.map((item) => ({ ...item, photos: loaded.filter((photo) => photo.service_id === item.id) })) }
+      : opened
+
+    return (
+      <section>
+        <button type="button" onClick={() => open(null)} className="mb-5 inline-flex items-center gap-2 text-[0.8125rem] font-semibold text-slate transition hover:text-navy">
+          <ChevronLeft className="h-4 w-4" /> История заказов
+        </button>
+        <CurrentOrder order={order} onOpenPhoto={onOpenPhoto} />
+        {photosError && <p role="alert" className="mt-3 text-[0.8125rem] text-slate">{photosError}</p>}
+      </section>
+    )
+  }
 
   return (
     <section>
@@ -436,11 +490,12 @@ function HistoryView({ active, orders, onBook }: { active: Order[]; orders: Orde
       <p className="mt-3 text-[0.875rem] text-slate">Заказы за последний год по данным AGBIS.</p>
       <div className="mt-8 grid gap-3">
         {all.length ? all.map((order) => (
-          <article key={order.id} className="grid gap-4 rounded-2xl border border-line bg-white p-5 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:px-6">
+          <button key={order.id} type="button" onClick={() => open(order.id)} className="group grid gap-4 rounded-2xl border border-line bg-white p-5 text-left transition hover:border-teal/40 hover:shadow-[0_10px_30px_rgba(14,26,53,.06)] active:scale-[0.99] sm:grid-cols-[1fr_auto_auto_auto] sm:items-center sm:px-6">
             <div><p className="font-display text-base font-bold text-navy">Заказ № {order.number}</p><p className="mt-1 text-[0.75rem] text-slate-soft">{order.created_at} · {order.items.length} поз.</p></div>
             <StatusPill status={order.status} />
             <p className="font-display text-base font-bold text-navy sm:min-w-28 sm:text-right">{money(order.amount)}</p>
-          </article>
+            <ChevronRight aria-hidden="true" className="hidden h-5 w-5 text-slate-soft transition group-hover:translate-x-0.5 group-hover:text-teal sm:block" />
+          </button>
         )) : <EmptyOrders onBook={onBook} archive />}
       </div>
     </section>
@@ -680,7 +735,7 @@ export function CabinetDashboard() {
         <div className="mx-auto max-w-[82rem] px-4 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-7 sm:pt-8 lg:px-10 lg:py-12">
           {error && <div className="mb-6 rounded-xl border border-destructive/20 bg-white px-4 py-3 text-[0.8125rem] text-destructive">{error}</div>}
           {view === 'orders' && <section><div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8"><div><p className="label text-teal">Добрый день{greeting ? `, ${greeting}` : ''}</p><h1 className="mt-2 font-display text-[2rem] font-bold tracking-[-.035em] text-navy sm:mt-3 sm:text-5xl">Ваши заказы</h1></div><div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[0.6875rem] text-slate-soft shadow-sm sm:text-[0.75rem]"><Clock3 className="h-3.5 w-3.5 text-teal sm:h-4 sm:w-4" /> Данные из AGBIS</div></div><div className="grid gap-6">{data.offer_notifications && !promptClosed && <NotificationsPrompt orders={data.orders} preferences={data.preferences} onSaved={(preferences) => setData((current) => current && { ...current, preferences })} onClose={closePrompt} />}{data.orders.length ? data.orders.map((order) => <CurrentOrder key={order.id} order={order} onOpenPhoto={setPhotoViewer} />) : <EmptyOrders onBook={() => setBookingOpen(true)} />}</div></section>}
-          {view === 'history' && <HistoryView active={data.orders} orders={data.history} onBook={() => setBookingOpen(true)} />}
+          {view === 'history' && <HistoryView active={data.orders} orders={data.history} onBook={() => setBookingOpen(true)} onOpenPhoto={setPhotoViewer} />}
           {view === 'settings' && <SettingsView dashboard={data} onSaved={(preferences) => setData({ ...data, preferences })} onLogout={logout} />}
         </div>
       </div>

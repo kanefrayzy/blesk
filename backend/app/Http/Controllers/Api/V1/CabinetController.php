@@ -142,6 +142,39 @@ class CabinetController extends Controller
         return response()->json(['message' => 'Напомним позже.']);
     }
 
+    /**
+     * Фотопротокол одного заказа. Для истории снимки не грузим вместе со
+     * списком: заказов за год может быть много, а смотрят один-два.
+     * Чужой заказ так не получить — AGBIS отвечает по сессии клиента.
+     */
+    public function orderPhotos(Request $request, string $orderId, AgbisClient $agbis): JsonResponse
+    {
+        $session = CabinetSession::fromRequest($request);
+
+        if (! $session) {
+            return response()->json(['message' => 'Сессия истекла. Войдите ещё раз.'], 401);
+        }
+
+        if (! preg_match('/^\d+$/', $orderId)) {
+            return response()->json(['message' => 'Заказ не найден.'], 404);
+        }
+
+        try {
+            $result = $agbis->orderImages($session->agbis_session, $orderId);
+        } catch (AgbisException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 503);
+        }
+
+        $photos = [];
+        foreach ($result['photos'] ?? [] as $photo) {
+            if (is_array($photo) && filled($photo['photo_id'] ?? null) && filled($photo['dos_id'] ?? null)) {
+                $photos[] = ['id' => (string) $photo['photo_id'], 'service_id' => (string) $photo['dos_id']];
+            }
+        }
+
+        return response()->json(['photos' => $photos]);
+    }
+
     public function photo(Request $request, string $photoId, AgbisClient $agbis, PhotoScaler $scaler): Response|JsonResponse
     {
         $session = CabinetSession::fromRequest($request);
@@ -194,6 +227,8 @@ class CabinetController extends Controller
             ];
         }
 
+        $orderStatus = $this->orderStatus($order);
+
         $items = [];
         foreach ($services as $service) {
             if (! is_array($service)) {
@@ -215,7 +250,11 @@ class CabinetController extends Controller
             $items[] = [
                 'id' => $id,
                 'name' => preg_replace('/^А\s+/u', '', trim((string) ($service['name'] ?? $service['service'] ?? 'Изделие'))),
-                'status' => $this->itemStatus((string) ($service['status_name'] ?? $order['condition_name'] ?? '')),
+                'status' => match ($orderStatus['code']) {
+                    'issued' => ['code' => 'issued', 'label' => 'Вещь выдана'],
+                    'cancelled' => ['code' => 'cancelled', 'label' => 'Отменена'],
+                    default => $this->itemStatus((string) ($service['status_name'] ?? $order['condition_name'] ?? '')),
+                },
                 'price' => $this->number($service['kredit'] ?? $service['price'] ?? 0),
                 'discount' => $this->number($service['discount'] ?? 0),
                 'details' => $addons,
@@ -233,7 +272,7 @@ class CabinetController extends Controller
             'number' => (string) ($order['doc_num'] ?? '—'),
             'created_at' => (string) ($order['doc_date'] ?? $order['date'] ?? ''),
             'ready_at' => (string) ($order['date_out'] ?? ''),
-            'status' => $this->orderStatus($order),
+            'status' => $orderStatus,
             'amount' => $amount,
             'paid' => $this->number($order['debet'] ?? 0),
             'pickup' => trim((string) ($order['sclad_name'] ?? $order['sclad_to_name'] ?? 'Энергетическая, 9')),

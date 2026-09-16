@@ -52,6 +52,67 @@ class CabinetApiTest extends TestCase
             ->assertJsonPath('history.1.status.label', 'Отменён');
     }
 
+    private function cabinetToken(): string
+    {
+        CabinetSession::query()->create([
+            'token_hash' => hash('sha256', $token = str_repeat('k', 80)),
+            'agbis_session' => 'AGBIS-SESSION',
+            'contr_id' => '10012220',
+            'phone' => '+79263314618',
+            'last_seen_at' => now(),
+            'expires_at' => now()->addDay(),
+        ]);
+
+        return $token;
+    }
+
+    public function test_items_of_an_issued_order_are_not_waiting_for_pickup(): void
+    {
+        $token = $this->cabinetToken();
+
+        Http::fakeSequence()
+            ->push(['error' => 0, 'orders' => []])
+            ->push(['error' => 0, 'orders_history' => [[
+                'dor_id' => '2', 'doc_num' => 'A-2', 'status' => '5',
+                'services' => [['dos_id' => '21', 'service' => rawurlencode('А Пиджак'), 'status_name' => rawurlencode('Исполненный')]],
+            ]]])
+            ->push(['error' => 0, 'Name' => rawurlencode('Максим')]);
+
+        $this->withToken($token)
+            ->getJson('/api/v1/cabinet/dashboard')
+            ->assertOk()
+            ->assertJsonPath('history.0.status.label', 'Выдан')
+            ->assertJsonPath('history.0.items.0.status.label', 'Вещь выдана');
+    }
+
+    public function test_order_photos_are_loaded_on_demand(): void
+    {
+        $token = $this->cabinetToken();
+
+        Http::fake(['*' => Http::response(['error' => 0, 'photos' => [
+            ['photo_id' => '42', 'dos_id' => '21'],
+            ['photo_id' => '', 'dos_id' => '22'],
+        ]])]);
+
+        $this->withToken($token)
+            ->getJson('/api/v1/cabinet/orders/10038180/photos')
+            ->assertOk()
+            ->assertExactJson(['photos' => [['id' => '42', 'service_id' => '21']]]);
+
+        Http::assertSent(fn ($request): bool => str_contains(urldecode($request->url()), '"dor_id":"10038180"')
+            && str_contains($request->url(), 'SessionID=AGBIS-SESSION'));
+    }
+
+    public function test_order_photos_reject_a_malformed_id_and_a_missing_session(): void
+    {
+        Http::fake();
+
+        $this->getJson('/api/v1/cabinet/orders/10038180/photos')->assertUnauthorized();
+        $this->withToken($this->cabinetToken())->getJson('/api/v1/cabinet/orders/abc/photos')->assertNotFound();
+
+        Http::assertNothingSent();
+    }
+
     public function test_unavailable_agbis_is_not_shown_as_an_empty_cabinet(): void
     {
         $session = CabinetSession::query()->create([
