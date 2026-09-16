@@ -39,13 +39,16 @@ class OrderChangeMessage
         foreach ($after as $id => $now) {
             $was = $before[$id] ?? null;
 
-            if ($was === null) {
+            // Заказ, впервые замеченный уже готовым, — это новость о готовности,
+            // а не о приёме: так бывает, если его вернули из выданных или опрос
+            // не застал его в работе.
+            if ($was === null && ! $now['ready']) {
                 $accepted[] = $now;
 
                 continue;
             }
 
-            if ($now['ready'] && ! $was['ready']) {
+            if ($now['ready'] && ! ($was['ready'] ?? false)) {
                 $becameReady[] = $now;
 
                 continue;

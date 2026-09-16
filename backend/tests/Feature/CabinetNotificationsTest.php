@@ -167,6 +167,16 @@ class CabinetNotificationsTest extends TestCase
         Http::assertSentCount(1);
     }
 
+    public function test_order_first_seen_already_ready_is_announced_as_ready(): void
+    {
+        $message = OrderChangeMessage::between(
+            [],
+            ['1' => ['number' => '000987-2', 'ready' => true, 'ready_at' => '']],
+        );
+
+        $this->assertSame('Заказ № 000987-2 готов', $message['title']);
+    }
+
     public function test_several_ready_orders_are_listed_in_one_message(): void
     {
         $message = OrderChangeMessage::between(
