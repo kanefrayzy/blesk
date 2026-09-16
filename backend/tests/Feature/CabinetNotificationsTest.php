@@ -155,10 +155,10 @@ class CabinetNotificationsTest extends TestCase
         Http::assertSentCount(1);
     }
 
-    public function test_quiet_client_is_still_checked_once_an_hour(): void
+    public function test_quiet_client_is_still_checked_every_twenty_minutes(): void
     {
         $preference = $this->subscriber([]);
-        $preference->forceFill(['last_checked_at' => now()->subHours(2)])->save();
+        $preference->forceFill(['last_checked_at' => now()->subMinutes(21)])->save();
 
         Http::fake(['*' => Http::response(['error' => 0, 'orders' => []])]);
 

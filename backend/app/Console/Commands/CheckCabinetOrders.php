@@ -78,10 +78,14 @@ class CheckCabinetOrders extends Command
         return self::SUCCESS;
     }
 
+    /** Как часто спрашиваем клиентов, у которых сейчас нет вещей в работе. */
+    private const QUIET_INTERVAL_MINUTES = 20;
+
     /**
-     * Часто спрашиваем только про тех, у кого есть вещи в работе: именно у них
-     * статус может измениться. Остальных — раз в час, чтобы заметитьновый заказ,
-     * не упираясь в ограничение AGBIS на частоту запросов.
+     * Каждый обход спрашиваем только тех, у кого есть вещи в работе: именно у
+     * них статус может измениться. Остальных реже — чтобы заметить новый или
+     * возвращённый из выданных заказ, не упираясь в ограничение AGBIS на
+     * частоту запросов.
      */
     private function isDue(CabinetPreference $preference): bool
     {
@@ -98,7 +102,7 @@ class CheckCabinetOrders extends Command
         }
 
         return $preference->last_checked_at === null
-            || $preference->last_checked_at->lte(now()->subHour());
+            || $preference->last_checked_at->lte(now()->subMinutes(self::QUIET_INTERVAL_MINUTES));
     }
 
     /**
