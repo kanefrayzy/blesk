@@ -255,7 +255,7 @@ function NotificationsPrompt({ orders, preferences, onSaved, onClose }: {
           ) : (
             <form onSubmit={enableEmail} className="mt-4 flex flex-col gap-2 sm:flex-row">
               <label htmlFor="prompt-email" className="sr-only">Электронная почта</label>
-              <input id="prompt-email" type="email" required autoComplete="email" value={email} onChange={(event) => { setEmail(event.target.value); setError('') }} placeholder="name@example.ru" className="h-11 min-w-0 flex-1 rounded-full border border-white/15 bg-white/10 px-4 text-[0.9375rem] text-white placeholder:text-white/40 focus:border-teal focus:outline-none" />
+              <input id="prompt-email" type="email" required autoComplete="email" value={email} onChange={(event) => { setEmail(event.target.value); setError('') }} placeholder="name@example.ru" className="h-11 w-full min-w-0 rounded-full sm:flex-1 border border-white/15 bg-white/10 px-4 text-[0.9375rem] text-white placeholder:text-white/40 focus:border-teal focus:outline-none" />
               <button disabled={busy} className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-teal px-5 font-display text-[0.8125rem] font-bold text-white transition hover:bg-teal-hi disabled:opacity-60">
                 {busy && <LoaderCircle className="h-4 w-4 animate-spin" />}
                 Сообщать на почту
