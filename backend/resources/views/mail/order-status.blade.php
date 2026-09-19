@@ -13,7 +13,7 @@
 </head>
 <body style="margin:0;padding:0;background:#f7f5f0;color:#0e1a35;font-family:{{ $font }}">
 {{-- Строка превью в списке писем --}}
-<div style="display:none;max-height:0;overflow:hidden;opacity:0">{{ $note }}&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;</div>
+<div style="display:none;max-height:0;overflow:hidden">{{ $note }}</div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f7f5f0">
 <tr><td align="center" style="padding:32px 12px">
@@ -21,7 +21,7 @@
 
     <tr><td style="border-radius:20px 20px 0 0;background:#0e1a35;padding:26px 32px">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-            <td><a href="https://bleskvip.ru"><img src="https://bleskvip.ru/brand/email-logo.png" width="148" height="42" alt="Блеск — профессиональная химчистка" style="display:block;border:0"></a></td>
+            <td><a href="https://bleskvip.ru" style="color:#ffffff;text-decoration:none"><img src="https://bleskvip.ru/brand/email-logo.png" width="148" height="42" alt="Блеск" style="display:block;border:0;font-family:{{ $font }};font-size:26px;font-weight:700;line-height:42px;color:#ffffff"></a></td>
             <td align="right" style="font-family:{{ $font }};font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8a93a8">Личный кабинет</td>
         </tr></table>
     </td></tr>
@@ -44,7 +44,7 @@
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 0"><tr>
                 <td style="border-radius:14px;background:#f0e8d9;padding:18px 20px;font-family:{{ $font }}">
                     <p style="margin:0 0 4px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#55607a">Где забрать</p>
-                    <p style="margin:0;font-size:15px;line-height:1.5;color:#0e1a35">г. Жуковский, ул. Энергетическая, 9<br>Часы работы 9:00 — 20:00</p>
+                    <p style="margin:0;font-size:15px;line-height:1.5;color:#0e1a35"><a href="https://yandex.ru/maps/org/blesk/1044852336/" style="color:#0e1a35;text-decoration:none">г.&nbsp;Жуковский, ул.&nbsp;Энергетическая,&nbsp;9</a><br>Часы работы 9:00 — 20:00</p>
                     <a href="https://yandex.ru/maps/org/blesk/1044852336/?rtext=~55.601529%2C38.114940&amp;rtt=auto" style="display:inline-block;margin-top:8px;font-size:14px;font-weight:700;color:#0e8d97;text-decoration:none">Построить маршрут →</a>
                 </td>
             </tr></table>

@@ -71,7 +71,7 @@ class CabinetNotificationsTest extends TestCase
             return $mail->heading === 'Заказ № 000987-2 готов'
                 && $mail->stage === 'ready'
                 && $mail->hasTo('client@example.com')
-                && str_contains($mail->render(), 'Энергетическая, 9');
+                && str_contains($mail->render(), 'Энергетическая');
         });
     }
 
