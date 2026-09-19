@@ -69,7 +69,9 @@ class CabinetNotificationsTest extends TestCase
 
         Mail::assertSent(OrderStatusChanged::class, function (OrderStatusChanged $mail): bool {
             return $mail->heading === 'Заказ № 000987-2 готов'
-                && $mail->hasTo('client@example.com');
+                && $mail->stage === 'ready'
+                && $mail->hasTo('client@example.com')
+                && str_contains($mail->render(), 'Энергетическая, 9');
         });
     }
 

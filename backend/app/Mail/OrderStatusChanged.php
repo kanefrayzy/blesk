@@ -15,6 +15,8 @@ class OrderStatusChanged extends Mailable
     public function __construct(
         public readonly string $heading,
         public readonly string $note,
+        /** in_work или ready — от него зависит шкала этапов в письме. */
+        public readonly string $stage = 'in_work',
     ) {}
 
     public function envelope(): Envelope
@@ -24,6 +26,6 @@ class OrderStatusChanged extends Mailable
 
     public function content(): Content
     {
-        return new Content(view: 'mail.order-status');
+        return new Content(view: 'mail.order-status', text: 'mail.order-status-text');
     }
 }

@@ -106,7 +106,7 @@ class CheckCabinetOrders extends Command
     }
 
     /**
-     * @param  array{title: string, body: string}  $message
+     * @param  array{title: string, body: string, stage: string}  $message
      */
     private function notify(CabinetPreference $preference, WebPushService $push, array $message): void
     {
@@ -119,7 +119,7 @@ class CheckCabinetOrders extends Command
         }
 
         try {
-            Mail::to($preference->email)->send(new OrderStatusChanged($message['title'], $message['body']));
+            Mail::to($preference->email)->send(new OrderStatusChanged($message['title'], $message['body'], $message['stage']));
         } catch (Throwable $exception) {
             // Недоступная почта не должна ронять обход остальных клиентов.
             Log::warning('Не удалось отправить письмо об изменении заказа', [

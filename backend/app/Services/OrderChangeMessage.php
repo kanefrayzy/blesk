@@ -28,7 +28,7 @@ class OrderChangeMessage
      *
      * @param  array<string, array{number: string, ready: bool, ready_at: string}>  $before
      * @param  array<string, array{number: string, ready: bool, ready_at: string}>  $after
-     * @return array{title: string, body: string}|null
+     * @return array{title: string, body: string, stage: string}|null
      */
     public static function between(array $before, array $after): ?array
     {
@@ -65,10 +65,12 @@ class OrderChangeMessage
                 ? [
                     'title' => 'Заказ № '.$becameReady[0]['number'].' готов',
                     'body' => 'Вещи можно забирать.',
+                    'stage' => 'ready',
                 ]
                 : [
                     'title' => 'Готовы заказы: '.self::numbers($becameReady),
                     'body' => 'Вещи можно забирать.',
+                    'stage' => 'ready',
                 ];
         }
 
@@ -76,6 +78,7 @@ class OrderChangeMessage
             return [
                 'title' => 'Изменился срок по заказу № '.$rescheduled[0]['number'],
                 'body' => 'Готовность: '.$rescheduled[0]['ready_at'].'.',
+                'stage' => 'in_work',
             ];
         }
 
@@ -84,10 +87,12 @@ class OrderChangeMessage
                 ? [
                     'title' => 'Заказ № '.$accepted[0]['number'].' принят',
                     'body' => 'Вещи в работе, статус будет виден в кабинете.',
+                    'stage' => 'in_work',
                 ]
                 : [
                     'title' => 'Приняты заказы: '.self::numbers($accepted),
                     'body' => 'Вещи в работе, статус будет виден в кабинете.',
+                    'stage' => 'in_work',
                 ];
         }
 
