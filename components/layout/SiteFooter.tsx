@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
@@ -87,7 +88,7 @@ export function SiteFooter() {
       <div className="border-t border-white/10">
         <Container className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[0.75rem] text-white/40">© Химчистка «Блеск». {org.site}</p>
-          <div className="flex flex-col gap-2 text-[0.75rem] sm:flex-row sm:gap-5">
+          <div className="flex flex-col gap-2 text-[0.75rem] sm:flex-row sm:items-center sm:gap-5">
             <Link
               href="/politika-obrabotki-personalnyh-dannyh"
               className="text-white/50 transition-colors hover:text-white"
@@ -100,6 +101,22 @@ export function SiteFooter() {
             >
               Согласие на обработку данных
             </Link>
+            <a
+              href="https://nikstudio.pro"
+              target="_blank"
+              rel="noopener"
+              className="group inline-flex items-center gap-1.5 text-white/50 transition-colors hover:text-white"
+            >
+              Сделано в
+              <span className="font-display text-[0.8125rem] tracking-[-.01em]">
+                <b className="font-bold text-white">NIK</b>
+                <span className="text-white/70">studio</span>
+              </span>
+              <ArrowUpRight
+                aria-hidden="true"
+                className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-teal"
+              />
+            </a>
           </div>
         </Container>
       </div>
