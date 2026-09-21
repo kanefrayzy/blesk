@@ -108,9 +108,9 @@ export function SiteFooter() {
               className="group inline-flex items-center gap-1.5 text-white/50 transition-colors hover:text-white"
             >
               Сделано в
-              <span className="font-display text-[0.8125rem] tracking-[-.01em]">
-                <b className="font-bold text-white">NIK</b>
-                <span className="text-white/70">studio</span>
+              <span className="inline-flex items-baseline gap-[0.2em] font-display leading-none uppercase">
+                <b className="text-[0.875rem] font-medium tracking-[-.02em] text-white">NIK</b>
+                <span className="text-[0.75rem] font-bold tracking-[-.01em] text-[#e8114b]">studio</span>
               </span>
               <ArrowUpRight
                 aria-hidden="true"
