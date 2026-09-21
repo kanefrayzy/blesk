@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   title: { default: SITE_TITLE, template: `%s — ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  // Подпись под иконкой на экране «Домой» — иначе iOS возьмёт длинный title.
+  appleWebApp: { capable: true, title: 'Блеск', statusBarStyle: 'default' },
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',

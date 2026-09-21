@@ -23,11 +23,13 @@ import {
   RefreshCw,
   Settings,
   Shirt,
+  Smartphone,
   Sparkles,
   X,
 } from 'lucide-react'
 import { OrderForm } from '@/components/order/OrderForm'
 import { reachGoal } from '@/lib/metrics'
+import { HomeScreenGuide } from '@/components/cabinet/HomeScreenGuide'
 
 type PublicStatus = { code: 'in_work' | 'ready' | 'issued' | 'cancelled'; label: string }
 type Detail = { label: string; value: string }
@@ -153,6 +155,7 @@ function NotificationsPrompt({ orders, preferences, onSaved, onClose }: {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [appleHint, setAppleHint] = useState(false)
+  const [guideOpen, setGuideOpen] = useState(false)
 
   // На сервере нет navigator. Push не предлагаем, если браузер его не умеет
   // или человек уже запретил сайту уведомления — кнопка ничего бы не сделала.
@@ -265,8 +268,11 @@ function NotificationsPrompt({ orders, preferences, onSaved, onClose }: {
 
           {error && <p role="alert" className="mt-3 text-[0.8125rem] text-white/80">{error}</p>}
           {mode === 'email' && appleHint && !error && (
-            <p className="mt-3 text-[0.75rem] leading-relaxed text-white/50">{HOME_SCREEN_HINT}</p>
+            <button type="button" onClick={() => setGuideOpen(true)} className="mt-3 inline-flex items-center gap-1.5 text-[0.8125rem] font-semibold text-teal transition hover:text-teal-hi">
+              <Smartphone className="h-4 w-4" /> Хочу push на iPhone — как включить?
+            </button>
           )}
+          {guideOpen && <HomeScreenGuide onClose={() => setGuideOpen(false)} />}
         </div>
       </div>
     </section>
@@ -521,6 +527,7 @@ function SettingsView({ dashboard, onSaved, onLogout }: { dashboard: Dashboard; 
   // Считаем после отрисовки: на сервере navigator недоступен.
   const [pushBlocked, setPushBlocked] = useState<string | null>(null)
   useEffect(() => setPushBlocked(pushUnavailable()), [])
+  const [guideOpen, setGuideOpen] = useState(false)
   async function save(event: FormEvent) {
     event.preventDefault(); setSaving(true); setMessage('')
     try {
@@ -555,7 +562,15 @@ function SettingsView({ dashboard, onSaved, onLogout }: { dashboard: Dashboard; 
       <form onSubmit={save} className="mt-8 max-w-[42rem] rounded-[1.75rem] bg-white p-5 shadow-[0_16px_50px_rgba(14,26,53,.06)] sm:p-7">
         <div className="grid gap-3">
           <Toggle checked={prefs.push_notifications} onChange={(value) => { if (!pushSaving) void changePush(value) }} label="Push-уведомления" note={pushSaving ? 'Подключаем браузер…' : 'Сообщим, когда заказ будет готов.'} icon={Bell} />
-          {pushBlocked && (
+          {pushBlocked === HOME_SCREEN_HINT ? (
+            <div className="rounded-2xl bg-cream px-4 py-3 text-[0.8125rem] leading-relaxed text-slate">
+              На iPhone push приходят только сайтам, добавленным на экран «Домой».
+              <button type="button" onClick={() => setGuideOpen(true)} className="mt-2 flex items-center gap-1.5 font-semibold text-teal transition hover:text-teal-hi">
+                <Smartphone className="h-4 w-4" /> Показать, как добавить
+              </button>
+              {guideOpen && <HomeScreenGuide onClose={() => setGuideOpen(false)} />}
+            </div>
+          ) : pushBlocked && (
             <p className="rounded-2xl bg-cream px-4 py-3 text-[0.8125rem] leading-relaxed text-slate">{pushBlocked}</p>
           )}
           <Toggle checked={prefs.email_notifications} onChange={(value) => setPrefs({ ...prefs, email_notifications: value })} label="Уведомления на почту" note="Письмо о готовности заказа на указанный адрес." icon={Mail} />
