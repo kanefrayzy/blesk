@@ -21,7 +21,10 @@ class AgbisClient
         $url = (string) config('agbis.captcha_url');
 
         try {
-            $response = Http::timeout(config('agbis.timeout'))->connectTimeout(5)->get($url);
+            $response = Http::withHeaders($this->appTokenHeader())
+                ->timeout(config('agbis.timeout'))
+                ->connectTimeout(5)
+                ->get($url);
         } catch (ConnectionException) {
             throw new AgbisException;
         }
@@ -148,7 +151,9 @@ class AgbisClient
             $client = Http::acceptJson();
 
             if ($cookies !== []) {
-                $client = $client->withCookies($cookies, parse_url($baseUrl, PHP_URL_HOST));
+                $client = $client
+                    ->withCookies($cookies, parse_url($baseUrl, PHP_URL_HOST))
+                    ->withHeaders($this->appTokenHeader());
             }
 
             // Локальный PHP на Windows может не видеть системное хранилище корневых сертификатов.
@@ -175,6 +180,18 @@ class AgbisClient
         }
 
         return $response;
+    }
+
+    /**
+     * Только в заголовке: в адресе или JSON команды Агбис токен не принимает.
+     *
+     * @return array<string, string>
+     */
+    private function appTokenHeader(): array
+    {
+        $token = (string) config('agbis.app_token');
+
+        return $token === '' ? [] : ['X-AGBIS-App-Token' => $token];
     }
 
     private function decode(mixed $value): mixed

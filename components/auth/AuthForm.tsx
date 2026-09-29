@@ -31,7 +31,7 @@ function formatPhone(value: string) {
   return parts.join('')
 }
 
-type ApiError = Error & { retryCaptcha?: boolean }
+type ApiError = Error & { retryCaptcha?: boolean; codeUnavailable?: boolean }
 
 async function api(path: string, body?: unknown) {
   const response = await fetch(`/api/v1/cabinet/${path}`, {
@@ -43,6 +43,7 @@ async function api(path: string, body?: unknown) {
   if (!response.ok) {
     const error: ApiError = new Error(payload.message || 'Что-то пошло не так. Попробуйте ещё раз.')
     error.retryCaptcha = Boolean(payload.retry_captcha)
+    error.codeUnavailable = Boolean(payload.code_unavailable)
     throw error
   }
   return payload
@@ -110,8 +111,14 @@ export function AuthForm() {
       setCaptcha(null)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Не удалось отправить код.')
-      // Метка сгорает при любой проверке — берём новую картинку.
-      if ((reason as ApiError)?.retryCaptcha !== false) await refreshCaptcha()
+      if ((reason as ApiError)?.codeUnavailable) {
+        // Новая картинка не поможет — возвращаем к вводу пароля.
+        setCodeMode(null)
+        setCaptcha(null)
+      } else if ((reason as ApiError)?.retryCaptcha) {
+        // Метка сгорает при любой проверке — берём новую картинку.
+        await refreshCaptcha()
+      }
     } finally {
       setLoading(false)
     }

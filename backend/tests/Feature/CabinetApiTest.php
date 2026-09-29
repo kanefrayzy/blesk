@@ -268,6 +268,46 @@ class CabinetApiTest extends TestCase
             ->assertJsonPath('message', 'Этот способ регистрации отключён');
     }
 
+    public function test_rejected_app_token_sends_the_client_to_password_without_a_new_captcha(): void
+    {
+        config(['agbis.app_token' => 'agb1.key.secret']);
+
+        Http::fake([
+            'https://himinfo.ru/*' => Http::response('PNG', 200, ['Set-Cookie' => 'CaptchaID=guid-5; Path=/']),
+            'https://example.test/*' => Http::response(['error' => 117, 'Msg' => 'Недействительный API токен']),
+        ]);
+
+        $token = $this->getJson('/api/v1/cabinet/captcha')->json('token');
+
+        $this->postJson('/api/v1/cabinet/send-code', [
+            'phone' => '+79990000000',
+            'captcha_token' => $token,
+            'captcha_value' => 'аб12в',
+            'mode' => 'reset',
+            'consent' => true,
+        ])->assertStatus(503)
+            ->assertJsonPath('code_unavailable', true)
+            ->assertJsonMissingPath('retry_captcha');
+
+        Http::assertSent(fn ($request): bool => str_contains($request->url(), 'ModernRememberPwdVerified=')
+            && $request->header('X-AGBIS-App-Token') === ['agb1.key.secret']
+            && ! str_contains($request->url(), 'agb1.key.secret'));
+    }
+
+    public function test_too_many_attempts_are_explained_in_russian(): void
+    {
+        Http::fake(['*' => Http::response(['error' => 1])]);
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/v1/cabinet/login', ['phone' => '+79990000000', 'password' => '1234']);
+        }
+
+        $this->postJson('/api/v1/cabinet/login', ['phone' => '+79990000000', 'password' => '1234'])
+            ->assertStatus(429)
+            ->assertHeader('Retry-After')
+            ->assertJsonPath('message', 'Слишком много попыток подряд. Попробуйте снова через 1 мин.');
+    }
+
     public function test_known_phone_is_told_it_already_has_a_password(): void
     {
         Http::fake([

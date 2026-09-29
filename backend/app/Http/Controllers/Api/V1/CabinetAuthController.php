@@ -10,6 +10,7 @@ use App\Services\AgbisClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CabinetAuthController extends Controller
@@ -84,6 +85,17 @@ class CabinetAuthController extends Controller
                 'message' => $exception->getMessage(),
                 'retry_captcha' => true,
             ], $exception->fromAgbis ? 422 : 503);
+        }
+
+        // 117 — Агбис не принял токен приложения. Клиент тут ничего не исправит:
+        // новая картинка не поможет, поэтому отправляем его к паролю или телефону.
+        if ((int) ($result['error'] ?? 0) === 117) {
+            Log::warning('AGBIS отклонил токен приложения (ошибка 117): запрос кода по SMS не работает.');
+
+            return response()->json([
+                'message' => 'Отправка кода по SMS временно не работает. Если пароль у вас уже есть, войдите с ним или позвоните нам: +7 (495) 556-62-50.',
+                'code_unavailable' => true,
+            ], 503);
         }
 
         // 116 — код с картинки не сошёлся. Картинка уже сгорела, нужна новая.
