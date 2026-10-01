@@ -294,11 +294,32 @@ class CabinetApiTest extends TestCase
             && ! str_contains($request->url(), 'agb1.key.secret'));
     }
 
+    public function test_ordinary_sign_in_does_not_hit_the_login_limit(): void
+    {
+        Http::fake([
+            'https://himinfo.ru/*' => Http::response('PNG', 200, ['Set-Cookie' => 'CaptchaID=guid-1; Path=/']),
+            'https://example.test/*' => Http::response(['error' => 116, 'Msg' => 'Неверный код']),
+        ]);
+
+        // Номер, три картинки, три попытки кода — запросов больше, чем лимит входа.
+        $this->postJson('/api/v1/cabinet/check-phone', ['phone' => '+79990000000'])->assertOk();
+        for ($i = 0; $i < 3; $i++) {
+            $token = $this->getJson('/api/v1/cabinet/captcha')->json('token');
+            $this->postJson('/api/v1/cabinet/send-code', [
+                'phone' => '+79990000000', 'captcha_token' => $token, 'captcha_value' => 'x',
+                'mode' => 'register', 'consent' => true,
+            ])->assertStatus(422);
+        }
+
+        $this->postJson('/api/v1/cabinet/login', ['phone' => '+79990000000', 'password' => '1234'])
+            ->assertStatus(422);
+    }
+
     public function test_too_many_attempts_are_explained_in_russian(): void
     {
         Http::fake(['*' => Http::response(['error' => 1])]);
 
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             $this->postJson('/api/v1/cabinet/login', ['phone' => '+79990000000', 'password' => '1234']);
         }
 
