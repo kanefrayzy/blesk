@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\CabinetPreference;
 use App\Models\CabinetSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class NotificationsPromptTest extends TestCase
@@ -30,6 +31,30 @@ class NotificationsPromptTest extends TestCase
         $preference = CabinetPreference::query()->create(['contr_id' => '10012220']);
 
         $this->assertTrue($preference->shouldOfferNotifications());
+    }
+
+    public function test_first_visit_preferences_can_be_saved_back_with_push_on(): void
+    {
+        config(['agbis.base_url' => 'https://example.test/api/']);
+        $token = $this->signIn();
+
+        Http::fakeSequence()
+            ->push(['error' => 0, 'orders' => []])
+            ->push(['error' => 0, 'orders_history' => []])
+            ->push(['error' => 0, 'Name' => 'Test']);
+
+        $preferences = $this->withToken($token)
+            ->getJson('/api/v1/cabinet/dashboard')
+            ->assertOk()
+            ->assertJsonPath('preferences.email_notifications', false)
+            ->assertJsonPath('preferences.push_notifications', false)
+            ->json('preferences');
+
+        $this->withToken($token)
+            ->patchJson('/api/v1/cabinet/preferences', [...$preferences, 'push_notifications' => true])
+            ->assertOk();
+
+        $this->assertTrue(CabinetPreference::query()->where('contr_id', '10012220')->value('push_notifications'));
     }
 
     public function test_client_with_any_channel_enabled_is_not_offered_again(): void

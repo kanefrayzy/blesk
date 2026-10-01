@@ -16,6 +16,15 @@ class CabinetPreference extends Model
         'last_checked_at',
     ];
 
+    /**
+     * Те же значения, что в базе по умолчанию. Без них только что созданная
+     * запись отдаёт null, и кабинет присылает его обратно при сохранении.
+     */
+    protected $attributes = [
+        'email_notifications' => false,
+        'push_notifications' => false,
+    ];
+
     /** На сколько дней «Не сейчас» прячет предложение включить уведомления. */
     public const PROMPT_PAUSE_DAYS = 30;
 
