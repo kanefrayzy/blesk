@@ -58,7 +58,8 @@ class SiteMediaObserver
             }
         }
 
-        if ($replaced === [] && ! $media->wasChanged('alt')) {
+        // Первая загрузка ничего не заменяет, но сайту сообщить о ней надо.
+        if (! $media->wasChanged(['image', 'image_mobile', 'alt'])) {
             return;
         }
 

@@ -159,6 +159,13 @@ class SiteMediaTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_first_upload_into_an_empty_slot_refreshes_the_site(): void
+    {
+        $this->media('production.kontrol')->update(['image' => $this->storeJpeg(1600, 1200)]);
+
+        Http::assertSentCount(1);
+    }
+
     public function test_mobile_frame_is_ignored_for_slots_without_one(): void
     {
         $media = $this->media('service.detskie');
