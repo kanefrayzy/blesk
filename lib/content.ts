@@ -66,6 +66,8 @@ export const stats = [
 ] as const
 
 export type Service = {
+  /** Место в админке: service.<key>. */
+  key: string
   name: string
   note: string
   photo: string
@@ -75,36 +77,42 @@ export type Service = {
 
 export const services: readonly Service[] = [
   {
+    key: 'odezhda',
     name: 'Одежда',
     note: 'Деликатный уход за любыми видами ткани',
     photo: '/photo/svc-odezhda.jpg',
     icon: 'palto.svg',
   },
   {
+    key: 'shuba',
     name: 'Шубы и кожа',
     note: 'Специальные методики для натуральных материалов',
     photo: '/photo/svc-shuba.jpg',
     icon: 'shuba.svg',
   },
   {
+    key: 'tekstil',
     name: 'Домашний текстиль',
     note: 'Чистота и свежесть для вашего дома',
     photo: '/photo/svc-tekstil.jpg',
     icon: 'zamsha.svg',
   },
   {
+    key: 'detskie',
     name: 'Детские вещи',
     note: 'Бережная чистка для самых маленьких',
     photo: '/photo/svc-detskie.jpg',
     icon: 'detskie-veschi.svg',
   },
   {
+    key: 'pitomcy',
     name: 'Вещи питомцев',
     note: 'Убираем запахи и бережно ухаживаем за тканями',
     photo: '/photo/svc-pitomcy.jpg',
     icon: 'veschi-zhivotnyh.svg',
   },
   {
+    key: 'korp',
     name: 'Корпоративное обслуживание',
     note: 'Индивидуальные решения для бизнеса',
     photo: '/photo/svc-korp.jpg',
@@ -195,23 +203,28 @@ export const heroSlides: readonly HeroSlide[] = [
   },
 ]
 
+/** Место в админке для каждого кадра: production.<key>. */
 export const production = [
   {
+    key: 'oborudovanie',
     name: 'Современное оборудование',
     note: 'Итальянское оборудование в собственном цехе',
     photo: '/photo/prod-oborudovanie.jpg',
   },
   {
+    key: 'smena',
     name: 'Профессиональная команда',
     note: 'Опыт сотрудников более 20 лет',
     photo: '/photo/prod-smena.jpg',
   },
   {
+    key: 'kontrol',
     name: 'Контроль качества',
     note: 'Проверка изделия перед выдачей владельцу',
     photo: '/photo/prod-kontrol.jpg',
   },
   {
+    key: 'upakovka',
     name: 'Аккуратная упаковка',
     note: 'Вещь возвращается упакованной и готовой к носке',
     photo: '/photo/prod-upakovka.jpg',

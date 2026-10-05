@@ -2,7 +2,9 @@
 
 import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSiteMedia } from '@/components/media/SiteMediaProvider'
 import { production } from '@/lib/content'
+import { resolvePhoto } from '@/lib/siteMediaTypes'
 
 const N = production.length
 const PANEL = 85 // svh прокрутки на одну панель закреплённой ленты
@@ -46,6 +48,10 @@ function Caption({ index, big }: { index: number; big: boolean }) {
  * карточки идут стопкой — каждая прилипает чуть ниже предыдущей. Чистый CSS.
  */
 export function Production() {
+  const media = useSiteMedia()
+  const photos = production.map((p) =>
+    resolvePhoto(media, `production.${p.key}`, { src: p.photo, alt: p.name }),
+  )
   const wrap = useRef<HTMLDivElement>(null)
   const view = useRef<HTMLDivElement>(null)
   const track = useRef<HTMLDivElement>(null)
@@ -129,7 +135,7 @@ export function Production() {
           {production.map((p, i) => (
             <li key={p.name} className="sticky" style={{ top: `${76 + i * 12}px` }}>
               <article className="relative mb-5 flex h-[56svh] max-h-[520px] min-h-[340px] overflow-hidden rounded-3xl shadow-[0_18px_44px_rgba(14,26,53,0.18)] ring-4 ring-cream">
-                <Image src={p.photo} alt={p.name} fill sizes="92vw" className="object-cover" />
+                <Image src={photos[i].src} alt={photos[i].alt} fill sizes="92vw" className="object-cover" />
                 <Shade />
                 <Caption index={i} big={false} />
               </article>
@@ -186,7 +192,7 @@ export function Production() {
                   aria-hidden="true"
                   className="relative flex h-[62svh] max-h-[620px] min-h-[380px] w-[58vw] max-w-[880px] shrink-0 snap-center overflow-hidden rounded-3xl"
                 >
-                  <Image src={p.photo} alt="" fill sizes="58vw" className="object-cover" />
+                  <Image src={photos[i].src} alt="" fill sizes="58vw" className="object-cover" />
                   <Shade />
                   <Caption index={i} big />
                 </article>

@@ -3,6 +3,8 @@ import Image, { getImageProps } from 'next/image'
 import Link from 'next/link'
 import { BellRing, Camera, ChevronLeft, PackageCheck } from 'lucide-react'
 import { AuthForm } from '@/components/auth/AuthForm'
+import { getSiteMedia } from '@/lib/siteMedia'
+import { resolvePhoto, type ResolvedPhoto } from '@/lib/siteMediaTypes'
 
 export const metadata: Metadata = {
   title: 'Вход в личный кабинет',
@@ -17,14 +19,18 @@ const advantages = [
   { icon: BellRing, title: 'Уведомления', text: 'Сообщим, когда статус заказа изменится.' },
 ]
 
-const photoAlt = 'Клиентка получает на телефон уведомление химчистки «Блеск» о готовом заказе'
+const defaultPhoto = {
+  src: '/photo/cabinet-push.jpg',
+  srcMobile: '/photo/cabinet-push-m.jpg',
+  alt: 'Клиентка получает на телефон уведомление химчистки «Блеск» о готовом заказе',
+}
 
-function LoginPhoto() {
+function LoginPhoto({ photo }: { photo: ResolvedPhoto }) {
   const {
     props: { srcSet: desktop },
   } = getImageProps({
-    alt: photoAlt,
-    src: '/photo/cabinet-push.jpg',
+    alt: photo.alt,
+    src: photo.src,
     width: 1180,
     height: 694,
     sizes: '46vw',
@@ -33,8 +39,8 @@ function LoginPhoto() {
   const {
     props: { srcSet: mobile, ...imageProps },
   } = getImageProps({
-    alt: photoAlt,
-    src: '/photo/cabinet-push-m.jpg',
+    alt: photo.alt,
+    src: photo.srcMobile,
     width: 1152,
     height: 800,
     sizes: '100vw',
@@ -49,12 +55,14 @@ function LoginPhoto() {
   )
 }
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const photo = resolvePhoto(await getSiteMedia(), 'login.cabinet', defaultPhoto)
+
   return (
     <main className="min-h-svh bg-navy xl:grid xl:grid-cols-[minmax(430px,.9fr)_minmax(560px,1.1fr)]">
       <section className="relative flex flex-col bg-navy text-white xl:min-h-svh">
         <div className="relative h-[32svh] min-h-[230px] shrink-0 overflow-hidden sm:h-[38svh] xl:h-[44svh]">
-          <LoginPhoto />
+          <LoginPhoto photo={photo} />
           <div aria-hidden className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-navy/75 to-transparent" />
           <div aria-hidden className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-navy to-transparent" />
           <div className="absolute inset-x-0 top-0 flex items-center justify-between px-5 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-8 xl:px-12 xl:pt-9">

@@ -10,9 +10,14 @@ import { Cabinet } from '@/components/sections/Cabinet'
 import { Production } from '@/components/sections/Production'
 import { Clients } from '@/components/sections/Clients'
 import { Contacts } from '@/components/sections/Contacts'
+import { SiteMediaProvider } from '@/components/media/SiteMediaProvider'
 import { schema } from '@/lib/seo'
+import { getSiteMedia } from '@/lib/siteMedia'
 
-export default function Page() {
+export default async function Page() {
+  // Фото, заменённые в админке; чего нет — останется стандартным.
+  const media = await getSiteMedia()
+
   return (
     <>
       <script
@@ -24,16 +29,18 @@ export default function Page() {
       <FloatingNav />
       <MobileNav />
 
-      <main>
-        <Hero />
-        <Stats />
-        <Services />
-        <OnlineOrder />
-        <Cabinet />
-        <Production />
-        <Clients />
-        <Contacts />
-      </main>
+      <SiteMediaProvider media={media}>
+        <main>
+          <Hero />
+          <Stats />
+          <Services />
+          <OnlineOrder />
+          <Cabinet />
+          <Production />
+          <Clients />
+          <Contacts />
+        </main>
+      </SiteMediaProvider>
 
       <SiteFooter />
     </>

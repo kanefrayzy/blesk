@@ -3,7 +3,9 @@
 import { getImageProps } from 'next/image'
 import type { TransitionEvent } from 'react'
 import { DUR, EASE, FADE, ITEMS, N } from '@/components/hero/useHeroCarousel'
+import { useSiteMedia } from '@/components/media/SiteMediaProvider'
 import type { HeroSlide } from '@/lib/content'
+import { resolvePhoto, type ResolvedPhoto, type SiteMedia } from '@/lib/siteMediaTypes'
 
 // Вертикальный кадр закрывает весь экран телефона, поэтому пикселей в нём
 // вдвое больше широкого. Качество там ниже: экран мелкий и плотный, разницы
@@ -35,23 +37,23 @@ type Props = {
  * разметке с fetchPriority=high — сканер предзагрузки находит его сам.
  */
 function SlidePhoto({
-  slide,
+  photo,
   hidden,
   eager,
   priority,
 }: {
-  slide: HeroSlide
+  photo: ResolvedPhoto
   hidden: boolean
   eager: boolean
   priority: boolean
 }) {
-  const alt = hidden ? '' : slide.alt
+  const alt = hidden ? '' : photo.alt
 
   const {
     props: { srcSet: wide },
   } = getImageProps({
     alt,
-    src: slide.photo,
+    src: photo.src,
     width: WIDE.w,
     height: WIDE.h,
     sizes: WIDE.sizes,
@@ -62,7 +64,7 @@ function SlidePhoto({
     props: { srcSet: tall, ...rest },
   } = getImageProps({
     alt,
-    src: slide.photoMobile,
+    src: photo.srcMobile,
     width: TALL.w,
     height: TALL.h,
     sizes: TALL.sizes,
@@ -85,7 +87,18 @@ function SlidePhoto({
   )
 }
 
+/** Кадр слайда: фото из админки, а если его нет — стандартное. */
+function photoOf(media: SiteMedia, slide: HeroSlide): ResolvedPhoto {
+  return resolvePhoto(media, `hero.${slide.key}`, {
+    src: slide.photo,
+    srcMobile: slide.photoMobile,
+    alt: slide.alt,
+  })
+}
+
 export function HeroSlides({ pos, dx, fade, moving, warm, onTransitionEnd }: Props) {
+  const media = useSiteMedia()
+
   return (
     <ul
       onTransitionEnd={onTransitionEnd}
@@ -110,7 +123,7 @@ export function HeroSlides({ pos, dx, fade, moving, warm, onTransitionEnd }: Pro
             className="relative h-full w-full shrink-0"
           >
             <SlidePhoto
-              slide={s}
+              photo={photoOf(media, s)}
               hidden={clone}
               eager={i === 1 || warm.includes(real)}
               priority={i === 1}

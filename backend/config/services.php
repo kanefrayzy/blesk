@@ -28,6 +28,14 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Витрина на Next: откуда брать стандартные снимки и куда стучаться,
+    // чтобы она сразу сбросила кэш после правки в панели.
+    'next' => [
+        'site_url' => env('SITE_URL', env('APP_URL')),
+        'revalidate_url' => env('NEXT_REVALIDATE_URL'),
+        'revalidate_secret' => env('NEXT_REVALIDATE_SECRET'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
