@@ -149,7 +149,7 @@ export const heroSlides: readonly HeroSlide[] = [
     note: 'Премиальная химчистка с вниманием к деталям. Чистота, которой можно доверять.',
     photo: '/photo/hero-odezhda.jpg',
     photoMobile: '/photo/hero-odezhda-m.jpg',
-    alt: 'Технолог «Блеска» осматривает шов шерстяного пальто в цехе',
+    alt: 'Клиент сдаёт пальто на стойке приёма «Блеска», сотрудница осматривает вещь',
   },
   {
     key: 'shuba',
@@ -159,7 +159,7 @@ export const heroSlides: readonly HeroSlide[] = [
     note: 'Специальные методики для натуральных материалов — с описью изделия при приёме.',
     photo: '/photo/hero-shuba.jpg',
     photoMobile: '/photo/hero-shuba-m.jpg',
-    alt: 'Специалист «Блеска» расчёсывает мех шубы под рабочей лампой',
+    alt: 'Приёмщица «Блеска» осматривает шубу клиентки на стойке приёма',
   },
   {
     key: 'tekstil',
@@ -169,7 +169,7 @@ export const heroSlides: readonly HeroSlide[] = [
     note: 'Шторы, покрывала и постельное бельё возвращаются готовыми к дому.',
     photo: '/photo/hero-tekstil.jpg',
     photoMobile: '/photo/hero-tekstil-m.jpg',
-    alt: 'Сотрудница «Блеска» складывает чистое постельное бельё в цехе',
+    alt: 'Сотрудница «Блеска» упаковывает чистое постельное бельё в цехе',
   },
   {
     key: 'detskie',
@@ -179,7 +179,7 @@ export const heroSlides: readonly HeroSlide[] = [
     note: 'Отдельная программа обработки под детские ткани и размеры.',
     photo: '/photo/hero-detskie.jpg',
     photoMobile: '/photo/hero-detskie-m.jpg',
-    alt: 'Сотрудница «Блеска» отдаёт ребёнку чистые детские вещи на приёмном пункте',
+    alt: 'Двое детей сидят на стойке приёма «Блеска»',
   },
   {
     key: 'pitomcy',
@@ -189,7 +189,7 @@ export const heroSlides: readonly HeroSlide[] = [
     note: 'Убираем запахи и бережно ухаживаем за тканями вещей питомцев.',
     photo: '/photo/hero-pitomcy.jpg',
     photoMobile: '/photo/hero-pitomcy-m.jpg',
-    alt: 'Хозяин с собакой на приёмном пункте «Блеска», сотрудница оформляет плед в чистку',
+    alt: 'Клиентка с собакой на приёмном пункте «Блеска»',
   },
   {
     key: 'korp',
@@ -199,7 +199,7 @@ export const heroSlides: readonly HeroSlide[] = [
     note: 'Индивидуальные решения для бизнеса: объём, график и условия обсуждаются отдельно.',
     photo: '/photo/hero-korp.jpg',
     photoMobile: '/photo/hero-korp-m.jpg',
-    alt: 'Технолог «Блеска» проверяет партию форменных пиджаков на конвейере цеха',
+    alt: 'Клиент в рабочей форме сдаёт вещи на приёмке «Блеска»',
   },
 ]
 
