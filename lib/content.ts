@@ -346,12 +346,12 @@ export const footerLinks = [
   {
     title: 'Услуги',
     items: [
-      { label: 'Одежда', href: '/#uslugi' },
-      { label: 'Шубы и кожа', href: '/#uslugi' },
-      { label: 'Домашний текстиль', href: '/#uslugi' },
-      { label: 'Детские вещи', href: '/#uslugi' },
-      { label: 'Вещи питомцев', href: '/#uslugi' },
-      { label: 'Корпоративное обслуживание', href: '/#biznes' },
+      { label: 'Одежда', href: '/uslugi/odezhda' },
+      { label: 'Шубы и кожа', href: '/uslugi/shuby-i-meh' },
+      { label: 'Домашний текстиль', href: '/uslugi/domashniy-tekstil' },
+      { label: 'Детские вещи', href: '/uslugi/detskie-veshchi' },
+      { label: 'Вещи питомцев', href: '/uslugi/veshchi-pitomcev' },
+      { label: 'Корпоративное обслуживание', href: '/uslugi/dlya-biznesa' },
     ],
   },
   {

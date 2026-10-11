@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getPosts } from '@/lib/blog'
 import { SITE_URL } from '@/lib/seo'
+import { servicePages } from '@/lib/servicePages'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getPosts()
@@ -12,6 +13,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 1,
     },
+    ...servicePages.map((page) => ({
+      url: `${SITE_URL}/uslugi/${page.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.8,
+    })),
     {
       url: `${SITE_URL}/blog`,
       lastModified: posts[0]?.published_at ? new Date(posts[0].published_at) : new Date(),
