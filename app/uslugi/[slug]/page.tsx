@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SkipLink } from '@/components/layout/SkipLink'
+import { OnlineOrder } from '@/components/sections/OnlineOrder'
 import { OtherServices } from '@/components/service/OtherServices'
 import { ServiceCta } from '@/components/service/ServiceCta'
 import { ServiceHero } from '@/components/service/ServiceHero'
@@ -96,6 +97,7 @@ export default async function ServicePage({ params }: Params) {
         <ServiceProcess page={page} shop={{ ...shopPhoto, name: shop.name, note: shop.note }} />
         <ServiceCta />
         <OtherServices current={page.key} media={media} />
+        <OnlineOrder />
       </main>
 
       <SiteFooter />

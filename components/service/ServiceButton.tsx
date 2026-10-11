@@ -1,8 +1,8 @@
 import { IconArrow } from '@/components/ui/Icons'
 
-/** Главная кнопка страницы услуги. По умолчанию ведёт к форме заявки. */
+/** Главная кнопка страницы услуги. По умолчанию ведёт к форме заявки внизу страницы. */
 export function ServiceButton({
-  href = '/#zapis',
+  href = '#zapis',
   className = '',
   children,
 }: {
