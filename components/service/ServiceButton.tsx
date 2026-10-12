@@ -1,5 +1,9 @@
 import { IconArrow } from '@/components/ui/Icons'
 
+/** Вторая кнопка первого экрана на морском поле. */
+export const ghostButton =
+  'inline-flex h-12 items-center justify-center rounded-full border border-white/72 px-6 font-display text-[0.8125rem] font-extrabold tracking-wide whitespace-nowrap text-white uppercase transition-[background-color,border-color,transform] duration-200 hover:border-white hover:bg-white/12 active:scale-[0.97]'
+
 /** Главная кнопка страницы услуги. По умолчанию ведёт к форме заявки внизу страницы. */
 export function ServiceButton({
   href = '#zapis',

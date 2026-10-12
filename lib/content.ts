@@ -41,6 +41,7 @@ export const nav = [
   { href: '/#proizvodstvo', label: 'О нас' },
   { href: '/#biznes', label: 'Для бизнеса' },
   { href: '/dileram', label: 'Дилерам' },
+  { href: '/vakansii', label: 'Вакансии' },
   { href: '/blog', label: 'Новости' },
 ] as const
 
@@ -362,6 +363,7 @@ export const footerLinks = [
       { label: 'Производство', href: '/#proizvodstvo' },
       { label: 'Новости и статьи', href: '/blog' },
       { label: 'Дилерам', href: '/dileram' },
+      { label: 'Вакансии', href: '/vakansii' },
       { label: 'Контакты', href: '/#kontakty' },
     ],
   },

@@ -35,8 +35,9 @@ export function FloatingNav() {
     const { width, height } = root.getBoundingClientRect()
     const t = now.current
 
-    // на первом экране полоса стоит по центру правого блока — фотографии
-    const heroLeft = vw * (PHOTO + (1 - PHOTO) / 2) - width / 2
+    // на первом экране полоса стоит по центру правого блока — фотографии,
+    // но за правый край не выходит, если пунктов больше, чем влезает
+    const heroLeft = Math.min(vw * (PHOTO + (1 - PHOTO) / 2) - width / 2, vw - width - Math.max(16, vw * 0.02))
     const heroTop = (vw * HEADER - height) / 2
     // до гидратации полоса стоит на классах, дальше ведём её трансформом
     root.style.right = 'auto'

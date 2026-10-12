@@ -3,6 +3,7 @@ import { getPosts } from '@/lib/blog'
 import { dealerPage } from '@/lib/dealerPage'
 import { SITE_URL } from '@/lib/seo'
 import { servicePages } from '@/lib/servicePages'
+import { vacanciesPage } from '@/lib/vacanciesPage'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getPosts()
@@ -25,6 +26,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/${vacanciesPage.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.6,
     },
     {
       url: `${SITE_URL}/blog`,

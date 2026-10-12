@@ -1,22 +1,22 @@
 import Image from 'next/image'
 import { Container } from '@/components/ui/Container'
-import { dealerPage } from '@/lib/dealerPage'
 
 type Shot = { key: string; src: string; alt: string; name: string }
+
+type Props = { title: string; text: string; shots: Shot[] }
 
 // Шахматная раскладка: широкий кадр и узкий, строкой ниже наоборот.
 const spans = ['sm:col-span-7', 'sm:col-span-5', 'sm:col-span-5', 'sm:col-span-7']
 
-export function DealerProduction({ shots }: { shots: Shot[] }) {
-  const { production } = dealerPage
-
+/** Фото производства на морском поле. */
+export function PhotoMosaic({ title, text, shots }: Props) {
   return (
     <section className="bg-navy">
       <Container className="py-14 lg:py-24">
         <div className="lg:flex lg:items-end lg:justify-between lg:gap-16">
-          <h2 className="h2 text-[clamp(1.75rem,3.2vw,2.75rem)] text-white">{production.title}</h2>
+          <h2 className="h2 text-[clamp(1.75rem,3.2vw,2.75rem)] text-white">{title}</h2>
           <p className="mt-4 max-w-[44ch] text-[1.0625rem] leading-relaxed text-white/70 lg:mt-0 lg:pb-1">
-            {production.text}
+            {text}
           </p>
         </div>
 

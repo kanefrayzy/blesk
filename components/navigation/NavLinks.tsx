@@ -97,7 +97,7 @@ export function NavLinks({ className = '' }: { className?: string }) {
           onFocus={() => setHover(i)}
           onClick={() => setActive(i)}
           /* Начертание не меняем: от него поедет ширина ссылки, а за ней пилюля. */
-          className="relative rounded-full px-3.5 py-2.5 text-[0.875rem] leading-none font-bold transition-transform duration-200 active:scale-95"
+          className="relative rounded-full px-2.5 py-2.5 text-[0.875rem] leading-none font-bold whitespace-nowrap transition-transform duration-200 active:scale-95 2xl:px-3.5"
         >
           {n.label}
         </Link>
