@@ -360,6 +360,7 @@ export const footerLinks = [
       { label: 'О нас', href: '/#proizvodstvo' },
       { label: 'Производство', href: '/#proizvodstvo' },
       { label: 'Новости и статьи', href: '/blog' },
+      { label: 'Дилерам', href: '/dileram' },
       { label: 'Контакты', href: '/#kontakty' },
     ],
   },

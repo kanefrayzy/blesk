@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { getPosts } from '@/lib/blog'
+import { dealerPage } from '@/lib/dealerPage'
 import { SITE_URL } from '@/lib/seo'
 import { servicePages } from '@/lib/servicePages'
 
@@ -19,6 +20,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     })),
+    {
+      url: `${SITE_URL}/${dealerPage.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
     {
       url: `${SITE_URL}/blog`,
       lastModified: posts[0]?.published_at ? new Date(posts[0].published_at) : new Date(),
