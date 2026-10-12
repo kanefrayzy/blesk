@@ -40,6 +40,7 @@ export const nav = [
   { href: '/#kak-rabotaet', label: 'Как это работает' },
   { href: '/#proizvodstvo', label: 'О нас' },
   { href: '/#biznes', label: 'Для бизнеса' },
+  { href: '/dileram', label: 'Дилерам' },
   { href: '/blog', label: 'Новости' },
 ] as const
 

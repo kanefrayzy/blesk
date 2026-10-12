@@ -10,7 +10,7 @@ export function DealerSplit() {
   return (
     <section className="bg-white">
       <Container className="py-14 lg:py-24">
-        <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
+        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
           <div>
             <h2 className="h2 text-[clamp(1.75rem,3.2vw,2.75rem)] text-navy">От вас</h2>
             <dl className="mt-7 border-t border-line">
@@ -25,13 +25,16 @@ export function DealerSplit() {
 
           <div className="self-start rounded-3xl bg-cream p-8 lg:p-10">
             <h2 className="h2 text-[clamp(1.75rem,3.2vw,2.75rem)] text-navy">От нас</h2>
-            <ul className="mt-7 space-y-4">
+            <ul className="mt-7 grid gap-x-8 gap-y-6 sm:grid-cols-2">
               {ours.map((o) => (
-                <li key={o} className="flex items-center gap-3.5 text-[1.0625rem] font-semibold text-navy">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal text-white">
-                    <IconCheck className="h-3.5 w-3.5" />
+                <li key={o.name} className="flex gap-3.5">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal text-white">
+                    <IconCheck className="h-3 w-3" />
                   </span>
-                  {o}
+                  <div>
+                    <h3 className="font-display text-[1.0625rem] leading-snug font-bold text-navy">{o.name}</h3>
+                    <p className="mt-1 text-[0.9375rem] leading-snug text-slate">{o.text}</p>
+                  </div>
                 </li>
               ))}
             </ul>

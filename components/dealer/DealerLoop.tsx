@@ -91,6 +91,15 @@ export function DealerLoop() {
             </li>
           ))}
         </ol>
+
+        <dl className="mt-12 grid gap-x-10 gap-y-8 border-t border-navy/12 pt-10 sm:grid-cols-3 lg:mt-16 lg:pt-12">
+          {loop.steps.map((s) => (
+            <div key={s.name}>
+              <dt className="font-display text-[1.1875rem] font-bold text-navy">{s.name}</dt>
+              <dd className="mt-2 max-w-[36ch] text-[1rem] leading-relaxed text-slate">{s.text}</dd>
+            </div>
+          ))}
+        </dl>
       </Container>
     </section>
   )

@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import { DealerClose } from '@/components/dealer/DealerClose'
 import { DealerHero } from '@/components/dealer/DealerHero'
+import { DealerIntro } from '@/components/dealer/DealerIntro'
 import { DealerLoop } from '@/components/dealer/DealerLoop'
+import { DealerMarket } from '@/components/dealer/DealerMarket'
 import { DealerProduction } from '@/components/dealer/DealerProduction'
 import { DealerSplit } from '@/components/dealer/DealerSplit'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -57,8 +59,10 @@ export default async function DealerPage() {
 
       <main id="main">
         <DealerHero />
+        <DealerIntro />
         <DealerLoop />
         <DealerSplit />
+        <DealerMarket media={media} />
         <DealerProduction shots={shots} />
         <DealerClose />
       </main>
