@@ -54,8 +54,8 @@ export default async function ServicePage({ params }: Params) {
   const shop = production.find((p) => p.key === page.processPhoto)!
   const media = await getSiteMedia()
 
-  const photo = resolvePhoto(media, `hero.${page.key}`, { src: slide.photo, alt: slide.alt })
-  const shopPhoto = resolvePhoto(media, `production.${shop.key}`, { src: shop.photo, alt: shop.name })
+  const photo = resolvePhoto(media, `hero.${page.key}`, { src: `/photo/usl-${page.key}.jpg`, alt: slide.alt })
+  const shopPhoto = resolvePhoto(media, `production.${shop.key}`, { src: `/photo/usl-${page.key}-ceh.jpg`, alt: shop.name })
 
   const schema = {
     '@context': 'https://schema.org',

@@ -41,6 +41,9 @@ coverage
 # рабочий архив генераций: в сборку не входит, версии ведёт git
 assets-archive
 
+# промо-видео на Remotion: исходники, ассеты и рендеры только локально
+promo-video/
+
 # редакторы
 .idea
 .vscode/*
@@ -53,3 +56,6 @@ assets-archive
 Thumbs.db
 ehthumbs.db
 desktop.ini
+
+# миниатюры и выбор страницы /primerka
+/.photo-cache/
