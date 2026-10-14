@@ -203,6 +203,7 @@ class CabinetNotificationsTest extends TestCase
         );
 
         $this->assertSame('Изменился срок по заказу № A-1', $message['title']);
-        $this->assertStringContainsString('06.09.2026 18:00', $message['body']);
+        $this->assertStringContainsString('6 сентября', $message['body']);
+        $this->assertStringContainsString('до 18:00', $message['body']);
     }
 }

@@ -8,6 +8,7 @@ use App\Models\CabinetPreference;
 use App\Models\CabinetSession;
 use App\Services\AgbisClient;
 use App\Services\PhotoScaler;
+use App\Support\AgbisDate;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -208,6 +209,16 @@ class CabinetController extends Controller
         ]);
     }
 
+    /** Флажки AGBIS приходят как 0/1. Проценты, количества и комментарии оставляем числами. */
+    private function addonValue(string $label, string $value): string
+    {
+        if (! in_array($value, ['0', '1'], true) || preg_match('/%|процент|износ|кол-?во|количеств|коммент|примеч|сумм|цен|скидк/iu', $label)) {
+            return $value;
+        }
+
+        return $value === '1' ? 'Да' : 'Нет';
+    }
+
     private function presentOrder(array $order, array $details, array $photos): array
     {
         $services = $details['order_services']
@@ -241,9 +252,10 @@ class CabinetController extends Controller
                 if (! is_array($addon) || blank($addon['descr'] ?? null) || blank($addon['aos_value'] ?? null)) {
                     continue;
                 }
+                $label = trim((string) $addon['descr']);
                 $addons[] = [
-                    'label' => trim((string) $addon['descr']),
-                    'value' => trim((string) $addon['aos_value']),
+                    'label' => $label,
+                    'value' => $this->addonValue($label, trim((string) $addon['aos_value'])),
                 ];
             }
 
@@ -270,8 +282,8 @@ class CabinetController extends Controller
         return [
             'id' => (string) ($order['dor_id'] ?? ''),
             'number' => (string) ($order['doc_num'] ?? '—'),
-            'created_at' => (string) ($order['doc_date'] ?? $order['date'] ?? ''),
-            'ready_at' => (string) ($order['date_out'] ?? ''),
+            'created_at' => AgbisDate::human((string) ($order['doc_date'] ?? $order['date'] ?? ''), false),
+            'ready_at' => AgbisDate::human((string) ($order['date_out'] ?? '')),
             'status' => $orderStatus,
             'amount' => $amount,
             'paid' => $this->number($order['debet'] ?? 0),

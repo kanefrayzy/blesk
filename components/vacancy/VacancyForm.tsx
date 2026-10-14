@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { IconArrow, IconCheck, IconChevron } from '@/components/ui/Icons'
 import { VACANCY_PICK } from '@/components/vacancy/ApplyButton'
 import { reachGoal } from '@/lib/metrics'
+import { checkPhone } from '@/lib/phone'
 import { vacancies } from '@/lib/vacanciesPage'
 
 type RequestState = 'idle' | 'sending' | 'success' | 'error'
@@ -144,7 +145,10 @@ export function VacancyForm() {
             required
             maxLength={30}
             value={values.phone}
-            onChange={(event) => setValues({ ...values, phone: event.target.value })}
+            onChange={(event) => {
+              checkPhone(event.target)
+              setValues({ ...values, phone: event.target.value })
+            }}
             placeholder="+7 (___) ___-__-__"
             className={field}
           />
@@ -210,7 +214,7 @@ export function VacancyForm() {
         </span>
       </label>
 
-      <label className="absolute -left-[10000px]">
+      <label className="absolute -left-[10000px]" aria-hidden="true">
         Сайт
         <input
           name="website"

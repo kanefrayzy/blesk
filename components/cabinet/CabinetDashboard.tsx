@@ -29,6 +29,7 @@ import {
 } from 'lucide-react'
 import { OrderForm } from '@/components/order/OrderForm'
 import { reachGoal } from '@/lib/metrics'
+import { plural } from '@/lib/utils'
 import { HomeScreenGuide } from '@/components/cabinet/HomeScreenGuide'
 
 type PublicStatus = { code: 'in_work' | 'ready' | 'issued' | 'cancelled'; label: string }
@@ -407,7 +408,7 @@ function CurrentOrder({ order, onOpenPhoto }: { order: Order; onOpenPhoto: (view
           </h2>
           <div className="mt-7 grid grid-cols-2 gap-x-4 gap-y-5 sm:mt-8 sm:grid-cols-3">
             <div><p className="text-[0.6875rem] text-white/42">Приняли</p><p className="mt-1 text-[0.875rem] font-semibold">{order.created_at || '—'}</p></div>
-            <div><p className="text-[0.6875rem] text-white/42">Готовность</p><p className="mt-1 text-[0.875rem] font-semibold">{order.ready_at || 'Уточняется'}</p></div>
+            <div><p className="text-[0.6875rem] text-white/42">Срок готовности</p><p className="mt-1 text-[0.875rem] font-semibold">{order.ready_at || 'Уточняется'}</p></div>
             <div className="col-span-2 sm:col-span-1"><p className="text-[0.6875rem] text-white/42">Сумма заказа</p><p className="mt-1 text-[0.875rem] font-semibold">{money(order.amount)}</p></div>
           </div>
         </div>
@@ -432,7 +433,7 @@ function CurrentOrder({ order, onOpenPhoto }: { order: Order; onOpenPhoto: (view
 
       <div className="border-t border-white/10 bg-cream p-3 text-navy sm:p-6 lg:p-8">
         <div className="mb-4 flex items-center justify-between gap-4">
-          <div><p className="label text-teal">Изделия в заказе</p><p className="mt-1 text-[0.8125rem] text-slate">{order.items.length} {order.items.length === 1 ? 'позиция' : 'позиции'}</p></div>
+          <div><p className="label text-teal">Изделия в заказе</p><p className="mt-1 text-[0.8125rem] text-slate">{order.items.length} {plural(order.items.length, ['позиция', 'позиции', 'позиций'])}</p></div>
           <span className="rounded-full bg-white px-3 py-1.5 text-[0.6875rem] font-semibold text-slate">Данные AGBIS</span>
         </div>
         <div className="grid gap-3">{order.items.map((item, index) => <ItemCard key={item.id || index} item={item} index={index} orderId={order.number} onOpenPhoto={onOpenPhoto} />)}</div>

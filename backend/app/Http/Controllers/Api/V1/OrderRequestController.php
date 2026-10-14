@@ -15,7 +15,12 @@ class OrderRequestController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'phone' => ['required', 'string', 'max:30', 'regex:/^[0-9+()\-\s]{7,30}$/'],
+            'phone' => ['required', 'string', 'max:30', 'regex:/^[0-9+()\-\s]{7,30}$/', function (string $attribute, mixed $value, \Closure $fail): void {
+                $digits = preg_replace('/\D/', '', (string) $value);
+                if (! (strlen($digits) === 10 || (strlen($digits) === 11 && in_array($digits[0], ['7', '8'], true)))) {
+                    $fail('Введите номер телефона полностью.');
+                }
+            }],
             'email' => ['required', 'email:rfc', 'max:160'],
             'service' => ['required', 'string', 'max:160'],
             'urgency' => ['required', Rule::in(['standard', 'urgent_24h', 'express_3h'])],

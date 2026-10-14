@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Support\AgbisDate;
+
 class OrderChangeMessage
 {
     /**
@@ -77,7 +79,7 @@ class OrderChangeMessage
         if ($rescheduled !== []) {
             return [
                 'title' => 'Изменился срок по заказу № '.$rescheduled[0]['number'],
-                'body' => 'Готовность: '.$rescheduled[0]['ready_at'].'.',
+                'body' => 'Готовность: '.AgbisDate::human($rescheduled[0]['ready_at']).'.',
                 'stage' => 'in_work',
             ];
         }

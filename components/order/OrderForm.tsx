@@ -5,6 +5,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import { IconArrow, IconCheck } from '@/components/ui/Icons'
 import { reachGoal } from '@/lib/metrics'
 import { contaminationOptions, orderServiceGroups } from '@/lib/order'
+import { checkPhone } from '@/lib/phone'
 
 type RequestState = 'idle' | 'sending' | 'success' | 'error'
 
@@ -70,6 +71,8 @@ export function OrderForm({ initialContact }: OrderFormProps = {}) {
   }
 
   function next() {
+    const phone = formRef.current?.elements.namedItem('phone')
+    if (phone instanceof HTMLInputElement) checkPhone(phone)
     if (!formRef.current?.reportValidity()) return
     setStep((current) => Math.min(current + 1, steps.length - 1))
   }
@@ -217,7 +220,10 @@ export function OrderForm({ initialContact }: OrderFormProps = {}) {
                   required
                   maxLength={30}
                   value={values.phone}
-                  onChange={(event) => setValues({ ...values, phone: event.target.value })}
+                  onChange={(event) => {
+                    checkPhone(event.target)
+                    setValues({ ...values, phone: event.target.value })
+                  }}
                   placeholder="+7 (___) ___-__-__"
                   className={field}
                 />
@@ -400,7 +406,7 @@ export function OrderForm({ initialContact }: OrderFormProps = {}) {
         )}
       </div>
 
-      <label className="absolute -left-[10000px]">
+      <label className="absolute -left-[10000px]" aria-hidden="true">
         Сайт
         <input
           name="website"
@@ -432,6 +438,7 @@ export function OrderForm({ initialContact }: OrderFormProps = {}) {
 
         {step < steps.length - 1 ? (
           <button
+            key="next"
             type="button"
             onClick={next}
             className="inline-flex h-12 items-center gap-2 rounded-full bg-navy px-6 font-display text-[0.8125rem] font-bold tracking-wide text-white uppercase transition-[background-color,transform] hover:bg-navy-2 active:scale-[0.98]"
@@ -441,6 +448,7 @@ export function OrderForm({ initialContact }: OrderFormProps = {}) {
           </button>
         ) : (
           <button
+            key="submit"
             type="submit"
             disabled={requestState === 'sending'}
             className="inline-flex h-12 items-center gap-2 rounded-full bg-teal px-6 font-display text-[0.8125rem] font-bold tracking-wide text-white uppercase transition-[background-color,transform] hover:bg-teal-hi active:scale-[0.98] disabled:opacity-60"

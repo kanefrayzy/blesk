@@ -405,7 +405,11 @@ class CabinetApiTest extends TestCase
             ->push(['error' => 0, 'order_services' => [[
                 'dos_id' => '11', 'name' => rawurlencode('А Пиджак'), 'status_name' => rawurlencode('Новый'),
                 'kredit' => '1500', 'barcode' => 'SECRET-BARCODE', 'shop_description' => 'SECRET-COMMENT',
-                'addons' => [['descr' => rawurlencode('Износ'), 'aos_value' => rawurlencode('20%')]],
+                'addons' => [
+                    ['descr' => rawurlencode('Износ'), 'aos_value' => rawurlencode('20%')],
+                    ['descr' => rawurlencode('Пятна'), 'aos_value' => '1'],
+                    ['descr' => rawurlencode('Разрывы'), 'aos_value' => '0'],
+                ],
             ]]])
             ->push(['error' => 0, 'photos' => [['dos_id' => '11', 'photo_id' => '42']]]);
 
@@ -416,7 +420,11 @@ class CabinetApiTest extends TestCase
             ->assertJsonPath('profile.name', 'Максим')
             ->assertJsonPath('orders.0.items.0.name', 'Пиджак')
             ->assertJsonPath('orders.0.items.0.status.label', 'Вещь в работе')
-            ->assertJsonPath('orders.0.items.0.photos.0.id', '42');
+            ->assertJsonPath('orders.0.items.0.photos.0.id', '42')
+            ->assertJsonPath('orders.0.items.0.details.0.value', '20%')
+            ->assertJsonPath('orders.0.items.0.details.1.value', 'Да')
+            ->assertJsonPath('orders.0.items.0.details.2.value', 'Нет')
+            ->assertJsonPath('orders.0.ready_at', '4 сентября, до 18:00');
 
         $this->assertStringNotContainsString('SECRET-BARCODE', $response->getContent());
         $this->assertStringNotContainsString('SECRET-COMMENT', $response->getContent());

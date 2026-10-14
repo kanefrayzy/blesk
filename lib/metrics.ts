@@ -12,7 +12,7 @@ const counter = Number(process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID || '87221377')
  * `click` — цель, заведённая в самой Метрике и используемая в Директе.
  * Остальные наши, для отчётов.
  */
-export function reachGoal(goal: 'click' | 'online_order_sent' | 'dealer_request_sent' | 'vacancy_response_sent' | 'phone_click' | 'notifications_enabled') {
+export function reachGoal(goal: 'click' | 'online_order_sent' | 'dealer_request_sent' | 'business_request_sent' | 'vacancy_response_sent' | 'phone_click' | 'notifications_enabled') {
   if (!Number.isInteger(counter) || counter <= 0) return
   window.ym?.(counter, 'reachGoal', goal)
 }

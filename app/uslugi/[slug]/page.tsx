@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { BusinessRequest } from '@/components/business/BusinessRequest'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SkipLink } from '@/components/layout/SkipLink'
@@ -95,9 +96,9 @@ export default async function ServicePage({ params }: Params) {
         <ServicePrices page={page} />
         <ServiceRisks page={page} />
         <ServiceProcess page={page} shop={{ ...shopPhoto, name: shop.name, note: shop.note }} />
-        <ServiceCta />
+        <ServiceCta business={page.key === 'korp'} />
         <OtherServices current={page.key} media={media} />
-        <OnlineOrder />
+        {page.key === 'korp' ? <BusinessRequest /> : <OnlineOrder />}
       </main>
 
       <SiteFooter />

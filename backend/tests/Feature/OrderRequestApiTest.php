@@ -55,6 +55,17 @@ class OrderRequestApiTest extends TestCase
         Mail::assertNothingSent();
     }
 
+    public function test_incomplete_phone_is_rejected(): void
+    {
+        Mail::fake();
+
+        $this->postJson('/api/v1/order-requests', [...$this->validPayload(), 'phone' => '+7 916 000'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['phone']);
+
+        Mail::assertNothingSent();
+    }
+
     private function validPayload(): array
     {
         return [
