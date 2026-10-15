@@ -19,7 +19,6 @@ import { resolvePhoto } from '@/lib/siteMediaTypes'
 
 type Params = { params: Promise<{ slug: string }> }
 
-export const dynamicParams = false
 
 export function generateStaticParams() {
   return servicePages.map((p) => ({ slug: p.slug }))
