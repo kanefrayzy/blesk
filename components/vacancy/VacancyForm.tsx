@@ -6,7 +6,7 @@ import { IconArrow, IconCheck, IconChevron } from '@/components/ui/Icons'
 import { VACANCY_PICK } from '@/components/vacancy/ApplyButton'
 import { reachGoal } from '@/lib/metrics'
 import { checkPhone } from '@/lib/phone'
-import { vacancies } from '@/lib/vacanciesPage'
+import type { CmsVacancy } from '@/lib/cmsTypes'
 
 type RequestState = 'idle' | 'sending' | 'success' | 'error'
 
@@ -23,7 +23,7 @@ const emptyValues = {
 const field =
   'mt-2 h-12 w-full rounded-xl border border-line bg-white px-4 text-[0.9375rem] text-navy outline-none transition-[border-color,box-shadow] placeholder:text-slate-soft hover:border-slate-soft focus:border-teal focus:ring-3 focus:ring-teal/15'
 
-export function VacancyForm() {
+export function VacancyForm({ vacancies }: { vacancies: CmsVacancy[] }) {
   const [requestState, setRequestState] = useState<RequestState>('idle')
   const [values, setValues] = useState(emptyValues)
 

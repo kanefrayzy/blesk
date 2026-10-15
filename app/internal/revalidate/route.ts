@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
 import { revalidateTag } from 'next/cache'
 import type { NextRequest } from 'next/server'
+import { CONTENT_TAG } from '@/lib/cms'
 import { SITE_MEDIA_TAG } from '@/lib/siteMedia'
 
 /**
@@ -8,7 +9,7 @@ import { SITE_MEDIA_TAG } from '@/lib/siteMedia'
  * когда истечёт кэш. Ходит напрямую на порт витрины, но адрес доступен и
  * снаружи — поэтому без секрета ничего не делаем.
  */
-const TAGS = new Set([SITE_MEDIA_TAG])
+const TAGS = new Set([SITE_MEDIA_TAG, CONTENT_TAG])
 
 function sameSecret(given: string, expected: string): boolean {
   const a = Buffer.from(given)

@@ -1,9 +1,9 @@
 import { BrandIcon } from '@/components/ui/BrandIcon'
 import { Container } from '@/components/ui/Container'
-import { vacanciesPage } from '@/lib/vacanciesPage'
+import type { VacanciesPageContent } from '@/lib/cmsTypes'
 
-export function VacancyOffers() {
-  const { offers } = vacanciesPage
+export function VacancyOffers({ page }: { page: VacanciesPageContent }) {
+  const { offers } = page
 
   return (
     <section className="bg-white">

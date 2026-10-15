@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import { Container } from '@/components/ui/Container'
 import { IconArrow } from '@/components/ui/Icons'
-import { dealerPage } from '@/lib/dealerPage'
+import type { DealerPageContent } from '@/lib/cmsTypes'
 
 // Кольцо в координатах 1200×440: слева пункт, справа цех, по часовой стрелке.
 const RING = 'M150 220A150 150 0 0 1 300 70H900A150 150 0 0 1 900 370H300A150 150 0 0 1 150 220Z'
@@ -18,8 +18,8 @@ function Place({ photo, alt, className }: { photo: string; alt: string; classNam
 }
 
 /** Путь вещи кольцом: пункт партнёра и цех «Блеска», между ними ежедневный рейс. */
-export function DealerLoop() {
-  const { loop } = dealerPage
+export function DealerLoop({ page }: { page: DealerPageContent }) {
+  const { loop } = page
 
   return (
     <section id="kak" className="scroll-mt-20 bg-cream">

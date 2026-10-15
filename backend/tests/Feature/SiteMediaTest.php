@@ -55,7 +55,7 @@ class SiteMediaTest extends TestCase
         SiteMedia::syncSlots();
 
         $this->assertSame(count(SiteMediaSlots::all()), SiteMedia::query()->count());
-        $this->assertSame(['hero', 'services', 'production', 'login'], SiteMedia::query()->orderBy('sort')->pluck('group')->unique()->values()->all());
+        $this->assertSame(['login'], SiteMedia::query()->orderBy('sort')->pluck('group')->unique()->values()->all());
     }
 
     public function test_api_returns_only_replaced_slots_with_absolute_urls(): void
@@ -63,20 +63,20 @@ class SiteMediaTest extends TestCase
         $this->getJson('/api/v1/site-media')->assertOk()->assertExactJson(['data' => []]);
         $this->assertSame('{"data":{}}', $this->get('/api/v1/site-media')->getContent());
 
-        $this->media('service.shuba')->update(['image' => $this->storeJpeg(1200, 1500), 'alt' => 'Цех']);
+        $this->media('login.cabinet')->update(['image' => $this->storeJpeg(1700, 1000), 'alt' => 'Телефон']);
 
         $data = $this->getJson('/api/v1/site-media')->assertOk()->json('data');
 
-        $this->assertSame(['service.shuba'], array_keys($data));
-        $this->assertStringStartsWith(url('/storage/site-media/'), $data['service.shuba']['src']);
-        $this->assertNull($data['service.shuba']['src_mobile']);
-        $this->assertSame('Цех', $data['service.shuba']['alt']);
+        $this->assertSame(['login.cabinet'], array_keys($data));
+        $this->assertStringStartsWith(url('/storage/site-media/'), $data['login.cabinet']['src']);
+        $this->assertNull($data['login.cabinet']['src_mobile']);
+        $this->assertSame('Телефон', $data['login.cabinet']['alt']);
     }
 
     public function test_upload_is_cropped_to_the_slot_and_shrunk(): void
     {
-        $raw = $this->storeJpeg(3000, 1500);
-        $media = $this->media('hero.odezhda');
+        $raw = $this->storeJpeg(3400, 1000);
+        $media = $this->media('login.cabinet');
         $media->update(['image' => $raw]);
 
         Storage::disk('public')->assertMissing($raw);
@@ -84,19 +84,19 @@ class SiteMediaTest extends TestCase
         $this->assertStringEndsWith('.jpg', $media->image);
 
         [$width, $height] = getimagesizefromstring(Storage::disk('public')->get($media->image));
-        // 64:47 по высоте 1500 — ширина 2043, она меньше предела 2560.
-        $this->assertSame(2043, $width);
-        $this->assertSame(1500, $height);
+        // 17:10 по высоте 1000 — ширина 1700, она меньше предела 2000.
+        $this->assertSame(1700, $width);
+        $this->assertSame(1000, $height);
     }
 
     public function test_large_upload_is_limited_to_the_slot_width(): void
     {
-        $media = $this->media('service.odezhda');
-        $media->update(['image' => $this->storeJpeg(1600, 2400)]);
+        $media = $this->media('login.cabinet');
+        $media->update(['image' => $this->storeJpeg(3000, 2000)]);
 
         [$width, $height] = getimagesizefromstring(Storage::disk('public')->get($media->image));
-        $this->assertSame(1200, $width);
-        $this->assertSame(1500, $height);
+        $this->assertSame(2000, $width);
+        $this->assertSame(1176, $height);
     }
 
     public function test_exif_orientation_is_applied(): void
@@ -130,11 +130,11 @@ class SiteMediaTest extends TestCase
 
     public function test_replacing_and_resetting_remove_old_files(): void
     {
-        $media = $this->media('production.smena');
-        $media->update(['image' => $this->storeJpeg(1600, 1200, 'first.jpg')]);
+        $media = $this->media('login.cabinet');
+        $media->update(['image' => $this->storeJpeg(1700, 1000, 'first.jpg')]);
         $first = $media->image;
 
-        $media->update(['image' => $this->storeJpeg(1600, 1200, 'second.jpg')]);
+        $media->update(['image' => $this->storeJpeg(1700, 1000, 'second.jpg')]);
         Storage::disk('public')->assertMissing($first);
         Storage::disk('public')->assertExists($media->image);
 
@@ -146,7 +146,7 @@ class SiteMediaTest extends TestCase
 
     public function test_change_asks_the_site_to_refresh_and_noop_does_not(): void
     {
-        $this->media('service.korp')->update(['alt' => 'Форма для ресторана']);
+        $this->media('login.cabinet')->update(['alt' => 'Телефон с уведомлением']);
 
         Http::assertSent(fn (Request $request): bool => $request->url() === 'http://127.0.0.1:3002/internal/revalidate'
             && $request->header('X-Revalidate-Secret') === ['test-secret']
@@ -154,35 +154,27 @@ class SiteMediaTest extends TestCase
 
         Http::fake();
         SiteMedia::syncSlots();
-        $this->media('service.korp')->update(['alt' => 'Форма для ресторана']);
+        $this->media('login.cabinet')->update(['alt' => 'Телефон с уведомлением']);
 
         Http::assertNothingSent();
     }
 
     public function test_first_upload_into_an_empty_slot_refreshes_the_site(): void
     {
-        $this->media('production.kontrol')->update(['image' => $this->storeJpeg(1600, 1200)]);
+        $this->media('login.cabinet')->update(['image' => $this->storeJpeg(1700, 1000)]);
 
         Http::assertSentCount(1);
-    }
-
-    public function test_mobile_frame_is_ignored_for_slots_without_one(): void
-    {
-        $media = $this->media('service.detskie');
-        $media->update(['image_mobile' => $this->storeJpeg(800, 1000)]);
-
-        $this->assertNull($media->fresh()->image_mobile);
     }
 
     public function test_site_shows_defaults_until_replaced(): void
     {
         config(['services.next.site_url' => 'https://bleskvip.ru']);
-        $media = $this->media('hero.korp');
+        $media = $this->media('login.cabinet');
 
-        $this->assertSame('https://bleskvip.ru/photo/hero-korp.jpg', $media->currentUrl());
-        $this->assertSame('https://bleskvip.ru/photo/hero-korp-m.jpg', $media->currentMobileUrl());
+        $this->assertSame('https://bleskvip.ru/photo/cabinet-push.jpg', $media->currentUrl());
+        $this->assertSame('https://bleskvip.ru/photo/cabinet-push-m.jpg', $media->currentMobileUrl());
 
-        $media->update(['image' => $this->storeJpeg(2048, 1504)]);
+        $media->update(['image' => $this->storeJpeg(1700, 1000)]);
         // Без своего мобильного кадра телефону уходит тот же новый снимок.
         $this->assertSame($media->currentUrl(), $media->currentMobileUrl());
     }
@@ -192,7 +184,7 @@ class SiteMediaTest extends TestCase
         $editor = User::factory()->editor()->create();
         $path = config('panel.path');
 
-        $this->actingAs($editor)->get("/{$path}/site-media")->assertOk()->assertSee('Слайд «Одежда»');
+        $this->actingAs($editor)->get("/{$path}/site-media")->assertOk()->assertSee('Фото над формой входа');
         $this->actingAs($editor)->get("/{$path}/site-media/{$this->media('login.cabinet')->id}/edit")->assertOk();
     }
 
@@ -200,26 +192,26 @@ class SiteMediaTest extends TestCase
     {
         $this->actingAs(User::factory()->editor()->create());
 
-        Livewire::test(EditSiteMedia::class, ['record' => $this->media('hero.shuba')->getRouteKey()])
+        Livewire::test(EditSiteMedia::class, ['record' => $this->media('login.cabinet')->getRouteKey()])
             ->fillForm(['image' => UploadedFile::fake()->image('small.jpg', 900, 600)])
             ->call('save')
             ->assertHasFormErrors(['image']);
 
-        $this->assertNull($this->media('hero.shuba')->image);
+        $this->assertNull($this->media('login.cabinet')->image);
     }
 
     public function test_big_enough_photo_is_saved_from_the_form(): void
     {
         $this->actingAs(User::factory()->editor()->create());
 
-        Livewire::test(EditSiteMedia::class, ['record' => $this->media('service.tekstil')->getRouteKey()])
-            ->fillForm(['image' => UploadedFile::fake()->image('tekstil.jpg', 1000, 1250), 'alt' => 'Бельё'])
+        Livewire::test(EditSiteMedia::class, ['record' => $this->media('login.cabinet')->getRouteKey()])
+            ->fillForm(['image' => UploadedFile::fake()->image('login.jpg', 1700, 1000), 'alt' => 'Телефон'])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $media = $this->media('service.tekstil');
+        $media = $this->media('login.cabinet');
         $this->assertNotNull($media->image);
         Storage::disk('public')->assertExists($media->image);
-        $this->assertSame('Бельё', $media->alt);
+        $this->assertSame('Телефон', $media->alt);
     }
 }

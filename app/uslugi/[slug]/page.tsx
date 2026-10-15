@@ -11,22 +11,27 @@ import { ServiceHero } from '@/components/service/ServiceHero'
 import { ServicePrices } from '@/components/service/ServicePrices'
 import { ServiceProcess } from '@/components/service/ServiceProcess'
 import { ServiceRisks } from '@/components/service/ServiceRisks'
-import { heroSlides, org, production, services } from '@/lib/content'
+import { getContent } from '@/lib/cms'
+import { org } from '@/lib/content'
 import { SITE_NAME, SITE_URL } from '@/lib/seo'
-import { servicePages } from '@/lib/servicePages'
-import { getSiteMedia } from '@/lib/siteMedia'
-import { resolvePhoto } from '@/lib/siteMediaTypes'
 
 type Params = { params: Promise<{ slug: string }> }
 
-
-export function generateStaticParams() {
-  return servicePages.map((p) => ({ slug: p.slug }))
+export async function generateStaticParams() {
+  const { services } = await getContent()
+  return services.map((s) => ({ slug: s.slug }))
 }
+
+async function findService(slug: string) {
+  const { services } = await getContent()
+  return { services, page: services.find((s) => s.slug === slug) }
+}
+
+const absolute = (src: string) => (src.startsWith('/') ? `${SITE_URL}${src}` : src)
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params
-  const page = servicePages.find((p) => p.slug === slug)
+  const { page } = await findService(slug)
   if (!page) return {}
 
   return {
@@ -38,23 +43,17 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       url: `${SITE_URL}/uslugi/${page.slug}`,
       title: page.seoTitle,
       description: page.seoDescription,
-      images: [{ url: `${SITE_URL}/photo/hero-${page.key}.jpg` }],
+      images: [{ url: absolute(page.heroPhoto) }],
     },
   }
 }
 
 export default async function ServicePage({ params }: Params) {
   const { slug } = await params
-  const page = servicePages.find((p) => p.slug === slug)
+  const { services, page } = await findService(slug)
   if (!page) notFound()
 
-  const service = services.find((s) => s.key === page.key)!
-  const slide = heroSlides.find((s) => s.key === page.key)!
-  const shop = production.find((p) => p.key === page.processPhoto)!
-  const media = await getSiteMedia()
-
-  const photo = resolvePhoto(media, `hero.${page.key}`, { src: `/photo/usl-${page.key}.jpg`, alt: slide.alt })
-  const shopPhoto = resolvePhoto(media, `production.${shop.key}`, { src: `/photo/usl-${page.key}-ceh.jpg`, alt: shop.name })
+  const business = page.form === 'business'
 
   const schema = {
     '@context': 'https://schema.org',
@@ -64,7 +63,7 @@ export default async function ServicePage({ params }: Params) {
         '@id': `${SITE_URL}/uslugi/${page.slug}#service`,
         name: page.title,
         description: page.seoDescription,
-        serviceType: service.name,
+        serviceType: page.name,
         url: `${SITE_URL}/uslugi/${page.slug}`,
         provider: { '@id': `${SITE_URL}/#business` },
         areaServed: { '@type': 'City', name: org.city },
@@ -74,7 +73,7 @@ export default async function ServicePage({ params }: Params) {
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: SITE_NAME, item: SITE_URL },
           { '@type': 'ListItem', position: 2, name: 'Услуги', item: `${SITE_URL}/#uslugi` },
-          { '@type': 'ListItem', position: 3, name: service.name },
+          { '@type': 'ListItem', position: 3, name: page.name },
         ],
       },
     ],
@@ -91,13 +90,18 @@ export default async function ServicePage({ params }: Params) {
       <PageHeader />
 
       <main id="main">
-        <ServiceHero page={page} service={service} photo={photo} />
+        <ServiceHero page={page} photo={{ src: page.heroPhoto, alt: page.heroAlt || page.title }} />
         <ServicePrices page={page} />
-        <ServiceRisks page={page} />
-        <ServiceProcess page={page} shop={{ ...shopPhoto, name: shop.name, note: shop.note }} />
-        <ServiceCta business={page.key === 'korp'} />
-        <OtherServices current={page.key} media={media} />
-        {page.key === 'korp' ? <BusinessRequest /> : <OnlineOrder />}
+        {page.risk.items.length > 0 && <ServiceRisks page={page} />}
+        {page.steps.length > 0 && (
+          <ServiceProcess
+            page={page}
+            shop={{ src: page.processPhoto, alt: page.processName || page.name, name: page.processName, note: page.processNote }}
+          />
+        )}
+        <ServiceCta business={business} />
+        <OtherServices current={page.slug} services={services} />
+        {business ? <BusinessRequest /> : <OnlineOrder />}
       </main>
 
       <SiteFooter />

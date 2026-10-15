@@ -1,10 +1,10 @@
 import Image from 'next/image'
 import { Container } from '@/components/ui/Container'
 import { IconCheck } from '@/components/ui/Icons'
-import type { ServicePage } from '@/lib/servicePages'
+import type { CmsService } from '@/lib/cmsTypes'
 
 type Props = {
-  page: ServicePage
+  page: CmsService
   /** Кадр из блока производства и его подпись. */
   shop: { src: string; alt: string; name: string; note: string }
 }

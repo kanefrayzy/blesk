@@ -3,16 +3,14 @@ import Link from 'next/link'
 import { ServiceButton } from '@/components/service/ServiceButton'
 import { BrandIcon } from '@/components/ui/BrandIcon'
 import { Container } from '@/components/ui/Container'
-import type { Service } from '@/lib/content'
-import type { ServicePage } from '@/lib/servicePages'
+import type { CmsService } from '@/lib/cmsTypes'
 
 type Props = {
-  page: ServicePage
-  service: Service
+  page: CmsService
   photo: { src: string; alt: string }
 }
 
-export function ServiceHero({ page, service, photo }: Props) {
+export function ServiceHero({ page, photo }: Props) {
   return (
     <section className="relative overflow-hidden bg-navy">
       {/* То же кольцо, что в блоке онлайн-заявки */}
@@ -30,7 +28,7 @@ export function ServiceHero({ page, service, photo }: Props) {
             <span aria-hidden="true" className="mx-2 text-white/25">
               /
             </span>
-            <span className="text-white/70">{service.name}</span>
+            <span className="text-white/70">{page.name}</span>
           </nav>
 
           <h1
@@ -86,7 +84,7 @@ export function ServiceHero({ page, service, photo }: Props) {
           </div>
           {/* Иконка услуги, как на карточках главной */}
           <span className="absolute -bottom-6 left-8 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-[0_6px_18px_rgba(14,26,53,0.2)] ring-4 ring-navy">
-            <BrandIcon name={service.icon} className="h-9 w-9" />
+            <BrandIcon name={page.icon} className="h-9 w-9" />
           </span>
         </div>
       </Container>

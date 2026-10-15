@@ -10,11 +10,13 @@ import {
   type PointerEvent,
   type TransitionEvent,
 } from 'react'
-import { heroSlides } from '@/lib/content'
+import { useContent } from '@/components/content/ContentProvider'
+import type { CmsHeroSlide } from '@/lib/cmsTypes'
 
-export const N = heroSlides.length
 /** Клон последнего кадра спереди и первого сзади — для бесшовной петли. */
-export const ITEMS = [heroSlides[N - 1], ...heroSlides, heroSlides[0]]
+export function loopOf(slides: CmsHeroSlide[]) {
+  return [slides[slides.length - 1], ...slides, slides[0]]
+}
 
 export const EASE = 'cubic-bezier(0.32, 0.72, 0, 1)'
 export const DUR = 480 // мс на переход между соседними кадрами
@@ -31,6 +33,8 @@ const SPEED_WINDOW = 120 // мс
  * Вынесена из разметки — Hero остаётся вёрсткой, а не машиной состояний.
  */
 export function useHeroCarousel() {
+  const { heroSlides } = useContent()
+  const N = heroSlides.length
   /** Позиция в ITEMS: 0 и N+1 — клоны. */
   const [pos, setPos] = useState(1)
   /** Настоящий показанный кадр: ведётся отдельно, чтобы точки и текст
@@ -290,6 +294,7 @@ export function useHeroCarousel() {
   }
 
   return {
+    slides: heroSlides,
     section,
     pos,
     active,

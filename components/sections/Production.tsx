@@ -2,11 +2,9 @@
 
 import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useSiteMedia } from '@/components/media/SiteMediaProvider'
-import { production } from '@/lib/content'
-import { resolvePhoto } from '@/lib/siteMediaTypes'
+import { useContent } from '@/components/content/ContentProvider'
+import type { CmsProductionSlide } from '@/lib/cmsTypes'
 
-const N = production.length
 const PANEL = 85 // svh прокрутки на одну панель закреплённой ленты
 const EDGE = 'max(1.25rem, calc((100vw - 1280px) / 2 + 2rem))'
 
@@ -17,7 +15,7 @@ const Shade = () => (
   />
 )
 
-function Caption({ index, big }: { index: number; big: boolean }) {
+function Caption({ index, item, big }: { index: number; item: CmsProductionSlide; big: boolean }) {
   // Десктопная лента — визуальный дубль мобильной стопки, поэтому её
   // подписи не заголовки: иначе в документе восемь h3 вместо четырёх.
   const Name = big ? 'p' : 'h3'
@@ -29,10 +27,10 @@ function Caption({ index, big }: { index: number; big: boolean }) {
       <Name
         className={`h2 mt-3 text-white ${big ? 'text-[clamp(1.25rem,2.2vw,1.875rem)]' : 'text-[1.25rem]'}`}
       >
-        {production[index].name}
+        {item.name}
       </Name>
       <p className="mt-2 max-w-[42ch] text-[0.9375rem] leading-snug text-white/75">
-        {production[index].note}
+        {item.note}
       </p>
     </div>
   )
@@ -48,10 +46,9 @@ function Caption({ index, big }: { index: number; big: boolean }) {
  * карточки идут стопкой — каждая прилипает чуть ниже предыдущей. Чистый CSS.
  */
 export function Production() {
-  const media = useSiteMedia()
-  const photos = production.map((p) =>
-    resolvePhoto(media, `production.${p.key}`, { src: p.photo, alt: p.name }),
-  )
+  const { production } = useContent()
+  const N = production.length
+  const photos = production.map((p) => ({ src: p.photo, alt: p.name }))
   const wrap = useRef<HTMLDivElement>(null)
   const view = useRef<HTMLDivElement>(null)
   const track = useRef<HTMLDivElement>(null)
@@ -137,7 +134,7 @@ export function Production() {
               <article className="relative mb-5 flex h-[56svh] max-h-[520px] min-h-[340px] overflow-hidden rounded-3xl shadow-[0_18px_44px_rgba(14,26,53,0.18)] ring-4 ring-cream">
                 <Image src={photos[i].src} alt={photos[i].alt} fill sizes="92vw" className="object-cover" />
                 <Shade />
-                <Caption index={i} big={false} />
+                <Caption index={i} item={p} big={false} />
               </article>
             </li>
           ))}
@@ -194,7 +191,7 @@ export function Production() {
                 >
                   <Image src={photos[i].src} alt="" fill sizes="58vw" className="object-cover" />
                   <Shade />
-                  <Caption index={i} big />
+                  <Caption index={i} item={p} big />
                 </article>
               ))}
             </div>

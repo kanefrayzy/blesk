@@ -1,10 +1,11 @@
+import Link from 'next/link'
 import { Container } from '@/components/ui/Container'
 import { IconArrow } from '@/components/ui/Icons'
 import { TrackedPhoneLink } from '@/components/metrics/TrackedPhoneLink'
 import { org, demoClients } from '@/lib/content'
 
 /** Марки клиентов демонстрационные — см. предупреждение над demoClients. */
-export function Clients() {
+export function Clients({ moreHref }: { moreHref?: string }) {
   return (
     <section id="biznes" aria-labelledby="clients-title" className="relative overflow-hidden bg-navy">
       <div
@@ -29,6 +30,15 @@ export function Clients() {
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
+            {moreHref && (
+              <Link
+                href={moreHref}
+                className="inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 font-display text-[0.875rem] font-bold text-navy transition-[background-color,transform] duration-200 hover:bg-mist active:scale-[0.97]"
+              >
+                Подробнее
+                <IconArrow className="h-4 w-4" />
+              </Link>
+            )}
             <TrackedPhoneLink
               href={org.phones[0].href}
               className="inline-flex h-12 items-center rounded-full bg-teal px-6 font-display text-[0.875rem] font-bold text-white shadow-[0_10px_28px_rgba(17,184,194,0.24)] transition-[background-color,transform,box-shadow] duration-200 hover:bg-teal-hi hover:shadow-[0_12px_34px_rgba(17,184,194,0.34)] active:scale-[0.97]"

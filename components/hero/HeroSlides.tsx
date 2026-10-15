@@ -2,10 +2,9 @@
 
 import { getImageProps } from 'next/image'
 import type { TransitionEvent } from 'react'
-import { DUR, EASE, FADE, ITEMS, N } from '@/components/hero/useHeroCarousel'
-import { useSiteMedia } from '@/components/media/SiteMediaProvider'
-import type { HeroSlide } from '@/lib/content'
-import { resolvePhoto, type ResolvedPhoto, type SiteMedia } from '@/lib/siteMediaTypes'
+import { DUR, EASE, FADE, loopOf } from '@/components/hero/useHeroCarousel'
+import type { CmsHeroSlide } from '@/lib/cmsTypes'
+import type { ResolvedPhoto } from '@/lib/siteMediaTypes'
 
 // Вертикальный кадр закрывает весь экран телефона, поэтому пикселей в нём
 // вдвое больше широкого. Качество там ниже: экран мелкий и плотный, разницы
@@ -14,6 +13,7 @@ const WIDE = { w: 2048, h: 1504, sizes: '63vw', q: 90 as const }
 const TALL = { w: 1104, h: 2048, sizes: '100vw', q: 75 as const }
 
 type Props = {
+  slides: CmsHeroSlide[]
   pos: number
   dx: number
   fade: boolean
@@ -87,17 +87,9 @@ function SlidePhoto({
   )
 }
 
-/** Кадр слайда: фото из админки, а если его нет — стандартное. */
-function photoOf(media: SiteMedia, slide: HeroSlide): ResolvedPhoto {
-  return resolvePhoto(media, `hero.${slide.key}`, {
-    src: slide.photo,
-    srcMobile: slide.photoMobile,
-    alt: slide.alt,
-  })
-}
-
-export function HeroSlides({ pos, dx, fade, moving, warm, onTransitionEnd }: Props) {
-  const media = useSiteMedia()
+export function HeroSlides({ slides, pos, dx, fade, moving, warm, onTransitionEnd }: Props) {
+  const N = slides.length
+  const ITEMS = loopOf(slides)
 
   return (
     <ul
@@ -123,7 +115,7 @@ export function HeroSlides({ pos, dx, fade, moving, warm, onTransitionEnd }: Pro
             className="relative h-full w-full shrink-0"
           >
             <SlidePhoto
-              photo={photoOf(media, s)}
+              photo={{ src: s.photo, srcMobile: s.photoMobile, alt: s.alt }}
               hidden={clone}
               eager={i === 1 || warm.includes(real)}
               priority={i === 1}

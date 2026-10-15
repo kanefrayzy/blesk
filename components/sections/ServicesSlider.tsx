@@ -3,10 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CircleButton } from '@/components/ui/CircleButton'
 import { IconChevron } from '@/components/ui/Icons'
-import { useSiteMedia } from '@/components/media/SiteMediaProvider'
+import { useContent } from '@/components/content/ContentProvider'
 import { ServiceCard } from '@/components/sections/ServiceCard'
-import { services } from '@/lib/content'
-import { resolvePhoto } from '@/lib/siteMediaTypes'
 
 /**
  * Лента услуг. Прокрутка нативная (scroll-snap), стрелки лишь двигают её на
@@ -17,10 +15,7 @@ import { resolvePhoto } from '@/lib/siteMediaTypes'
  * контрольной точке, поэтому седьмая услуга вернёт стрелки сама.
  */
 export function ServicesSlider() {
-  const media = useSiteMedia()
-  const photos = services.map((s) =>
-    resolvePhoto(media, `service.${s.key}`, { src: s.photo, alt: s.name }),
-  )
+  const { services } = useContent()
   const track = useRef<HTMLUListElement>(null)
   const [canPrev, setCanPrev] = useState(false)
   const [canNext, setCanNext] = useState(true)
@@ -77,7 +72,7 @@ export function ServicesSlider() {
           fits ? 'justify-center' : 'snap-x snap-mandatory'
         }`}
       >
-        {services.map((s, i) => (
+        {services.map((s) => (
           <li
             key={s.name}
             /* Доли контейнера, а не фиксированные ширины: на xl шесть карточек
@@ -88,7 +83,6 @@ export function ServicesSlider() {
           >
             <ServiceCard
               service={s}
-              photo={photos[i]}
               sizes="(max-width: 639px) 80vw, (max-width: 767px) 45vw, (max-width: 1023px) 31vw, (max-width: 1279px) 24vw, 200px"
             />
           </li>

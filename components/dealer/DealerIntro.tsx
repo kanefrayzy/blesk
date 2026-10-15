@@ -1,8 +1,8 @@
 import { Container } from '@/components/ui/Container'
-import { dealerPage } from '@/lib/dealerPage'
+import type { DealerPageContent } from '@/lib/cmsTypes'
 
-export function DealerIntro() {
-  const { intro } = dealerPage
+export function DealerIntro({ page }: { page: DealerPageContent }) {
+  const { intro } = page
 
   return (
     <section className="bg-white">

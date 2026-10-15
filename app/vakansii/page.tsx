@@ -10,26 +10,31 @@ import { VacancyList } from '@/components/vacancy/VacancyList'
 import { VacancyOffers } from '@/components/vacancy/VacancyOffers'
 import { org } from '@/lib/content'
 import { SITE_NAME, SITE_URL } from '@/lib/seo'
-import { vacancies, vacanciesPage } from '@/lib/vacanciesPage'
+import { getContent } from '@/lib/cms'
 
-const url = `${SITE_URL}/${vacanciesPage.slug}`
+const url = `${SITE_URL}/vakansii`
 
 /** День, когда заказчик прислал список должностей. */
 const DATE_POSTED = '2026-10-13'
 
-export const metadata: Metadata = {
-  title: vacanciesPage.seoTitle,
-  description: vacanciesPage.seoDescription,
-  alternates: { canonical: `/${vacanciesPage.slug}` },
-  openGraph: {
-    type: 'website',
-    url,
+export async function generateMetadata(): Promise<Metadata> {
+  const { vacanciesPage } = await getContent()
+
+  return {
     title: vacanciesPage.seoTitle,
     description: vacanciesPage.seoDescription,
-  },
+    alternates: { canonical: '/vakansii' },
+    openGraph: {
+      type: 'website',
+      url,
+      title: vacanciesPage.seoTitle,
+      description: vacanciesPage.seoDescription,
+    },
+  }
 }
 
-export default function VacanciesPage() {
+export default async function VacanciesPage() {
+  const { vacancies, vacanciesPage } = await getContent()
   // Зарплаты, графика и типа занятости заказчик не называл — в разметку их не ставим.
   const schema = {
     '@context': 'https://schema.org',
@@ -41,7 +46,7 @@ export default function VacanciesPage() {
           .map((d) => `<li>${d}</li>`)
           .join('')}</ul><p>Требования:</p><ul>${v.requirements.map((r) => `<li>${r}</li>`).join('')}</ul>`,
         datePosted: DATE_POSTED,
-        url: `${url}#${vacanciesPage.slug}`,
+        url: `${url}#vakansii`,
         hiringOrganization: { '@id': `${SITE_URL}/#business` },
         jobLocation: {
           '@type': 'Place',
@@ -86,14 +91,14 @@ export default function VacanciesPage() {
             Откликнуться
           </a>
         </CurveHero>
-        <VacancyOffers />
-        <VacancyList />
+        <VacancyOffers page={vacanciesPage} />
+        <VacancyList page={vacanciesPage} vacancies={vacancies} />
         <PhotoMosaic
           title={vacanciesPage.place.title}
           text={vacanciesPage.place.text}
           shots={vacanciesPage.place.shots.map((s) => ({ ...s, alt: s.name }))}
         />
-        <VacancyClose />
+        <VacancyClose page={vacanciesPage} vacancies={vacancies} />
       </main>
 
       <SiteFooter />

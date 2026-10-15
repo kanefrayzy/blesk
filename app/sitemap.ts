@@ -1,12 +1,10 @@
 import type { MetadataRoute } from 'next'
 import { getPosts } from '@/lib/blog'
-import { dealerPage } from '@/lib/dealerPage'
+import { getContent } from '@/lib/cms'
 import { SITE_URL } from '@/lib/seo'
-import { servicePages } from '@/lib/servicePages'
-import { vacanciesPage } from '@/lib/vacanciesPage'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const posts = await getPosts()
+  const [posts, { services }] = await Promise.all([getPosts(), getContent()])
 
   return [
     {
@@ -15,20 +13,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 1,
     },
-    ...servicePages.map((page) => ({
+    ...services.map((page) => ({
       url: `${SITE_URL}/uslugi/${page.slug}`,
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     })),
     {
-      url: `${SITE_URL}/${dealerPage.slug}`,
+      url: `${SITE_URL}/dileram`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
-      url: `${SITE_URL}/${vacanciesPage.slug}`,
+      url: `${SITE_URL}/vakansii`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.6,

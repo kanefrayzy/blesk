@@ -1,4 +1,5 @@
-import { org, services } from '@/lib/content'
+import type { CmsService } from '@/lib/cmsTypes'
+import { org } from '@/lib/content'
 
 export const SITE_URL = 'https://bleskvip.ru'
 
@@ -22,7 +23,7 @@ export const OG_IMAGE = `${SITE_URL}/og.jpg`
  * запрещает (self-serving reviews), и звёзды в выдаче за это не дают всё равно.
  * Ссылка на карточку организации отдана через sameAs — этого достаточно.
  */
-export const schema = {
+export const siteSchema = (services: Pick<CmsService, 'name' | 'note'>[]) => ({
   '@context': 'https://schema.org',
   '@graph': [
     {
@@ -66,4 +67,4 @@ export const schema = {
       },
     },
   ],
-}
+})

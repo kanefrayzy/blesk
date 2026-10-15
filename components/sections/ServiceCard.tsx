@@ -1,26 +1,24 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import type { Service } from '@/lib/content'
-import { servicePath } from '@/lib/servicePages'
+import type { CmsService } from '@/lib/cmsTypes'
 
 type Props = {
-  service: Service
-  photo: { src: string; alt: string }
+  service: Pick<CmsService, 'slug' | 'name' | 'note' | 'icon' | 'cardPhoto'>
   sizes: string
 }
 
 /** Карточка услуги: одна на ленту главной и на «Другие услуги». */
-export function ServiceCard({ service, photo, sizes }: Props) {
+export function ServiceCard({ service, sizes }: Props) {
   return (
     <Link
-      href={servicePath(service.key)}
+      href={`/uslugi/${service.slug}`}
       className="group block rounded-xl text-center focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal"
     >
       <div className="relative">
         <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-mist">
           <Image
-            src={photo.src}
-            alt={photo.alt}
+            src={service.cardPhoto}
+            alt={service.name}
             fill
             sizes={sizes}
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"

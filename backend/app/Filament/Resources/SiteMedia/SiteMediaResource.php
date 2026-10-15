@@ -24,7 +24,11 @@ class SiteMediaResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
 
-    protected static ?string $navigationLabel = 'Фото на сайте';
+    protected static string|\UnitEnum|null $navigationGroup = 'Сайт';
+
+    protected static ?int $navigationSort = 7;
+
+    protected static ?string $navigationLabel = 'Фото страницы входа';
 
     protected static ?string $modelLabel = 'фото';
 

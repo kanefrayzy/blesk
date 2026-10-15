@@ -1,9 +1,9 @@
 import { BrandIcon } from '@/components/ui/BrandIcon'
 import { Container } from '@/components/ui/Container'
-import type { ServicePage } from '@/lib/servicePages'
+import type { CmsService } from '@/lib/cmsTypes'
 
 /** Чем рискует вещь: тёмная панель с выводом и карточки рисков с иконками брендбука. */
-export function ServiceRisks({ page }: { page: ServicePage }) {
+export function ServiceRisks({ page }: { page: CmsService }) {
   const { title, punch, items } = page.risk
 
   return (

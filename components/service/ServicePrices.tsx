@@ -3,11 +3,11 @@ import { ServiceButton } from '@/components/service/ServiceButton'
 import { Container } from '@/components/ui/Container'
 import { IconCheck } from '@/components/ui/Icons'
 import { org } from '@/lib/content'
-import { priceFactors, type ServicePage } from '@/lib/servicePages'
+import type { CmsService } from '@/lib/cmsTypes'
 
 /** Цены одной карточкой, по образцу блока онлайн-заявки на главной. */
-export function ServicePrices({ page }: { page: ServicePage }) {
-  const factors = page.factors ?? priceFactors
+export function ServicePrices({ page }: { page: CmsService }) {
+  const factors = page.factors
 
   return (
     <section id="ceny" className="scroll-mt-20 bg-cream py-14 sm:py-20">
@@ -68,17 +68,19 @@ export function ServicePrices({ page }: { page: ServicePage }) {
               </dl>
             )}
 
-            <div className="mt-auto rounded-2xl bg-cream p-6">
-              <h3 className="font-display text-[1.0625rem] font-bold text-navy">От чего зависит цена</h3>
-              <ul className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
-                {factors.map((f) => (
-                  <li key={f} className="flex items-center gap-2.5 text-[0.9375rem] text-navy">
-                    <IconCheck className="h-4 w-4 shrink-0 text-teal" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {factors.length > 0 && (
+              <div className="mt-auto rounded-2xl bg-cream p-6">
+                <h3 className="font-display text-[1.0625rem] font-bold text-navy">От чего зависит цена</h3>
+                <ul className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+                  {factors.map((f) => (
+                    <li key={f} className="flex items-center gap-2.5 text-[0.9375rem] text-navy">
+                      <IconCheck className="h-4 w-4 shrink-0 text-teal" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </Container>

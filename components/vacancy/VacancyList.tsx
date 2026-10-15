@@ -4,7 +4,7 @@ import { ApplyButton } from '@/components/vacancy/ApplyButton'
 import { Container } from '@/components/ui/Container'
 import { IconCheck } from '@/components/ui/Icons'
 import { org } from '@/lib/content'
-import { vacancies, vacanciesPage } from '@/lib/vacanciesPage'
+import type { CmsVacancy, VacanciesPageContent } from '@/lib/cmsTypes'
 
 function Points({ title, items }: { title: string; items: readonly string[] }) {
   return (
@@ -23,13 +23,19 @@ function Points({ title, items }: { title: string; items: readonly string[] }) {
 }
 
 /** Должности карточками; шестая ячейка сетки — условия и телефон. */
-export function VacancyList() {
-  const { list } = vacanciesPage
+export function VacancyList({ page, vacancies }: { page: VacanciesPageContent; vacancies: CmsVacancy[] }) {
+  const { list } = page
 
   return (
     <section id="vakansii" className="scroll-mt-20 bg-cream">
       <Container className="py-14 lg:py-24">
         <h2 className="h2 text-[clamp(1.75rem,3.2vw,2.75rem)] text-navy">{list.title}</h2>
+
+        {vacancies.length === 0 && (
+          <p className="mt-6 max-w-[52ch] text-[1.0625rem] leading-relaxed text-slate">
+            Сейчас открытых вакансий нет. Оставьте отклик ниже — свяжемся, когда появится подходящее место.
+          </p>
+        )}
 
         <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3 lg:gap-6">
           {vacancies.map((v) => (

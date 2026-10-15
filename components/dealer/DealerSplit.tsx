@@ -1,11 +1,11 @@
 import Image from 'next/image'
 import { Container } from '@/components/ui/Container'
 import { IconCheck } from '@/components/ui/Icons'
-import { dealerPage } from '@/lib/dealerPage'
+import type { DealerPageContent } from '@/lib/cmsTypes'
 
 /** Что остаётся за партнёром, что берёт «Блеск», и готовый фирменный стиль из брендбука. */
-export function DealerSplit() {
-  const { yours, ours, brand } = dealerPage
+export function DealerSplit({ page }: { page: DealerPageContent }) {
+  const { yours, ours, brand } = page
 
   return (
     <section className="bg-white">

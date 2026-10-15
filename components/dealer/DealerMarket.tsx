@@ -1,12 +1,10 @@
 import { ServiceCard } from '@/components/sections/ServiceCard'
 import { Container } from '@/components/ui/Container'
-import { services } from '@/lib/content'
-import { dealerPage } from '@/lib/dealerPage'
-import { resolvePhoto, type SiteMedia } from '@/lib/siteMediaTypes'
+import type { CmsService, DealerPageContent } from '@/lib/cmsTypes'
 
 /** Что сдают в пункт и кто это приносит: услуги карточками главной и аудитории из стратегии. */
-export function DealerMarket({ media }: { media: SiteMedia }) {
-  const { accepts, audience } = dealerPage
+export function DealerMarket({ page, services }: { page: DealerPageContent; services: CmsService[] }) {
+  const { accepts, audience } = page
 
   return (
     <section className="bg-cream">
@@ -20,10 +18,9 @@ export function DealerMarket({ media }: { media: SiteMedia }) {
 
         <ul className="mt-10 grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-3 lg:grid-cols-6">
           {services.map((s) => (
-            <li key={s.key}>
+            <li key={s.slug}>
               <ServiceCard
                 service={s}
-                photo={resolvePhoto(media, `service.${s.key}`, { src: s.photo, alt: s.name })}
                 sizes="(min-width: 1024px) 190px, (min-width: 640px) 31vw, 45vw"
               />
             </li>

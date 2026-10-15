@@ -1,6 +1,6 @@
 'use client'
 
-import { heroSlides } from '@/lib/content'
+import { useContent } from '@/components/content/ContentProvider'
 import { AUTOPLAY } from '@/components/hero/useHeroCarousel'
 
 type Props = {
@@ -19,6 +19,7 @@ type Props = {
  * не могут разъехаться.
  */
 export function HeroDots({ active, auto, playing, compact = false, onJump, onDone }: Props) {
+  const { heroSlides } = useContent()
   return (
     <ul className={compact ? 'flex items-center gap-2' : 'flex items-center gap-[0.4vw] px-[0.5vw]'}>
       {heroSlides.map((s, i) => (

@@ -10,34 +10,29 @@ import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SkipLink } from '@/components/layout/SkipLink'
 import { PhotoMosaic } from '@/components/sections/PhotoMosaic'
 import { ghostButton, ServiceButton } from '@/components/service/ServiceButton'
-import { production } from '@/lib/content'
-import { dealerPage } from '@/lib/dealerPage'
+import { getContent } from '@/lib/cms'
 import { SITE_NAME, SITE_URL } from '@/lib/seo'
-import { getSiteMedia } from '@/lib/siteMedia'
-import { resolvePhoto } from '@/lib/siteMediaTypes'
 
-const url = `${SITE_URL}/${dealerPage.slug}`
+export async function generateMetadata(): Promise<Metadata> {
+  const { dealerPage } = await getContent()
 
-export const metadata: Metadata = {
-  title: dealerPage.seoTitle,
-  description: dealerPage.seoDescription,
-  alternates: { canonical: `/${dealerPage.slug}` },
-  openGraph: {
-    type: 'website',
-    url,
+  return {
     title: dealerPage.seoTitle,
     description: dealerPage.seoDescription,
-  },
+    alternates: { canonical: '/dileram' },
+    openGraph: {
+      type: 'website',
+      url: `${SITE_URL}/dileram`,
+      title: dealerPage.seoTitle,
+      description: dealerPage.seoDescription,
+    },
+  }
 }
 
 export default async function DealerPage() {
-  const media = await getSiteMedia()
+  const { dealerPage, production, services } = await getContent()
 
-  const shots = production.map((p) => ({
-    key: p.key,
-    name: p.name,
-    ...resolvePhoto(media, `production.${p.key}`, { src: p.photo, alt: p.name }),
-  }))
+  const shots = production.map((p) => ({ key: p.key, name: p.name, src: p.photo, alt: p.name }))
 
   const schema = {
     '@context': 'https://schema.org',
@@ -70,12 +65,12 @@ export default async function DealerPage() {
             Как это работает
           </a>
         </CurveHero>
-        <DealerIntro />
-        <DealerLoop />
-        <DealerSplit />
-        <DealerMarket media={media} />
+        <DealerIntro page={dealerPage} />
+        <DealerLoop page={dealerPage} />
+        <DealerSplit page={dealerPage} />
+        <DealerMarket page={dealerPage} services={services} />
         <PhotoMosaic title={dealerPage.production.title} text={dealerPage.production.text} shots={shots} />
-        <DealerClose />
+        <DealerClose page={dealerPage} />
       </main>
 
       <SiteFooter />

@@ -5,9 +5,15 @@ import { Button } from '@/components/ui/Button'
 import { Container } from '@/components/ui/Container'
 import { IconTelegram, IconVk } from '@/components/ui/Icons'
 import { TrackedPhoneLink } from '@/components/metrics/TrackedPhoneLink'
+import { getContent } from '@/lib/cms'
 import { org, footerLinks } from '@/lib/content'
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const { services } = await getContent()
+  const columns = footerLinks.map((col) =>
+    col.title === 'Услуги' ? { ...col, items: services.map((s) => ({ label: s.name, href: `/uslugi/${s.slug}` })) } : col,
+  )
+
   return (
     <footer className="bg-navy">
       <Container className="grid gap-10 py-14 lg:grid-cols-[1fr_2fr_1fr] lg:gap-12">
@@ -27,7 +33,7 @@ export function SiteFooter() {
         </div>
 
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
-          {footerLinks.map((col) => (
+          {columns.map((col) => (
             <div key={col.title}>
               <p className="label text-white/45">{col.title}</p>
               <ul className="mt-4 space-y-2.5">

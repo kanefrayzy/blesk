@@ -243,8 +243,3 @@ export const servicePages: readonly ServicePage[] = [
     seoDescription: 'Корпоративное обслуживание: форма персонала, скатерти, постельное бельё. Собственный цех в Жуковском, объём и график обсуждаются отдельно.',
   },
 ]
-
-export const servicePath = (key: string) => {
-  const page = servicePages.find((p) => p.key === key)
-  return page ? `/uslugi/${page.slug}` : '/#uslugi'
-}

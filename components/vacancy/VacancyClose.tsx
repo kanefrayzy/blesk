@@ -2,10 +2,10 @@ import { TrackedPhoneLink } from '@/components/metrics/TrackedPhoneLink'
 import { Container } from '@/components/ui/Container'
 import { VacancyForm } from '@/components/vacancy/VacancyForm'
 import { org } from '@/lib/content'
-import { vacanciesPage } from '@/lib/vacanciesPage'
+import type { CmsVacancy, VacanciesPageContent } from '@/lib/cmsTypes'
 
-export function VacancyClose() {
-  const { reply } = vacanciesPage
+export function VacancyClose({ page, vacancies }: { page: VacanciesPageContent; vacancies: CmsVacancy[] }) {
+  const { reply } = page
 
   return (
     <section id="otklik" className="scroll-mt-20 bg-cream">
@@ -38,7 +38,7 @@ export function VacancyClose() {
         </div>
 
         <div className="self-start rounded-[1.5rem] bg-white shadow-[0_20px_60px_rgba(14,26,53,0.1)] ring-1 ring-navy/5">
-          <VacancyForm />
+          <VacancyForm vacancies={vacancies} />
         </div>
       </Container>
     </section>

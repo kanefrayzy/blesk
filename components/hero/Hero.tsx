@@ -8,14 +8,13 @@ import { HeroShapes } from '@/components/hero/HeroShapes'
 import { HeroSlides } from '@/components/hero/HeroSlides'
 import { OrderCard } from '@/components/hero/OrderCard'
 import { useHeroCarousel } from '@/components/hero/useHeroCarousel'
-import { heroSlides } from '@/lib/content'
 
 const CTA =
   'inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full px-5 font-display text-[clamp(0.6875rem,0.89vw,0.9375rem)] font-extrabold tracking-wide uppercase transition-[background-color,border-color,transform,box-shadow] duration-200 active:scale-[0.97] lg:h-[3.7vw] lg:px-[calc(2vw_-_7px)]'
 
 export function Hero() {
   const c = useHeroCarousel()
-  const slide = heroSlides[c.active]
+  const slide = c.slides[c.active] ?? c.slides[0]
 
   return (
     <div className="relative">
@@ -40,6 +39,7 @@ export function Hero() {
             className="absolute inset-0 touch-pan-y overflow-hidden select-none focus-visible:-outline-offset-2 focus-visible:outline-2 focus-visible:outline-teal lg:left-[37.41%] lg:cursor-grab lg:active:cursor-grabbing"
           >
             <HeroSlides
+              slides={c.slides}
               pos={c.pos}
               dx={c.dx}
               fade={c.fade}
@@ -95,7 +95,7 @@ export function Hero() {
                 <IconArrow className="h-4 w-4 lg:h-[1vw] lg:w-[1vw]" />
               </a>
               <a
-                href="#uslugi"
+                href={slide.href || '#uslugi'}
                 className={`${CTA} border border-white/72 text-white hover:border-white hover:bg-white/12`}
               >
                 Узнать больше
