@@ -418,6 +418,7 @@ class CabinetApiTest extends TestCase
 
         $response->assertOk()
             ->assertJsonPath('profile.name', 'Максим')
+            ->assertJsonPath('profile.first_name', 'Максим')
             ->assertJsonPath('orders.0.items.0.name', 'Пиджак')
             ->assertJsonPath('orders.0.items.0.status.label', 'Вещь в работе')
             ->assertJsonPath('orders.0.items.0.photos.0.id', '42')

@@ -9,6 +9,7 @@ use App\Models\CabinetSession;
 use App\Services\AgbisClient;
 use App\Services\PhotoScaler;
 use App\Support\AgbisDate;
+use App\Support\PersonName;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -86,7 +87,8 @@ class CabinetController extends Controller
 
         return response()->json([
             'profile' => [
-                'name' => $this->profileName($profileResult),
+                'name' => $name = $this->profileName($profileResult),
+                'first_name' => PersonName::first($name),
                 'phone' => $this->formatPhone($session->phone),
                 'promo_code' => $session->promo_code,
             ],

@@ -38,7 +38,7 @@ type Photo = { id: string; service_id: string }
 type OrderItem = { id: string; name: string; status: PublicStatus; price: number; discount: number; details: Detail[]; photos: Photo[] }
 type Order = { id: string; number: string; created_at: string; ready_at: string; status: PublicStatus; amount: number; paid: number; pickup: string; items: OrderItem[] }
 type Dashboard = {
-  profile: { name: string | null; phone: string; promo_code: string | null }
+  profile: { name: string | null; first_name: string | null; phone: string; promo_code: string | null }
   orders: Order[]
   history: Order[]
   preferences: { email: string | null; email_notifications: boolean; push_notifications: boolean }
@@ -52,9 +52,11 @@ function money(value: number) {
   return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(value)
 }
 
-function firstName(name: string | null) {
-  if (!name) return null
-  return name.trim().split(/\s+/)[0]
+function greetingByTime(hour: number) {
+  if (hour >= 23 || hour < 8) return 'Доброй ночи'
+  if (hour < 12) return 'Доброе утро'
+  if (hour < 18) return 'Добрый день'
+  return 'Добрый вечер'
 }
 
 function applicationServerKey(value: string) {
@@ -693,7 +695,8 @@ export function CabinetDashboard() {
 
   const closePrompt = useCallback(() => setPromptClosed(true), [])
 
-  const greeting = useMemo(() => firstName(data?.profile.name ?? null), [data?.profile.name])
+  const greeting = data?.profile.first_name ?? null
+  const hello = useMemo(() => greetingByTime(new Date().getHours()), [data])
 
   async function logout() {
     await fetch('/api/v1/cabinet/logout', { method: 'POST', headers: { Accept: 'application/json' } }).catch(() => null)
@@ -750,7 +753,7 @@ export function CabinetDashboard() {
 
         <div className="mx-auto max-w-[82rem] px-4 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-7 sm:pt-8 lg:px-10 lg:py-12">
           {error && <div className="mb-6 rounded-xl border border-destructive/20 bg-white px-4 py-3 text-[0.8125rem] text-destructive">{error}</div>}
-          {view === 'orders' && <section><div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8"><div><p className="label text-teal">Добрый день{greeting ? `, ${greeting}` : ''}</p><h1 className="mt-2 font-display text-[2rem] font-bold tracking-[-.035em] text-navy sm:mt-3 sm:text-5xl">Ваши заказы</h1></div><div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[0.6875rem] text-slate-soft shadow-sm sm:text-[0.75rem]"><Clock3 className="h-3.5 w-3.5 text-teal sm:h-4 sm:w-4" /> Данные из AGBIS</div></div><div className="grid gap-6">{data.offer_notifications && !promptClosed && <NotificationsPrompt orders={data.orders} preferences={data.preferences} onSaved={(preferences) => setData((current) => current && { ...current, preferences })} onClose={closePrompt} />}{data.orders.length ? data.orders.map((order) => <CurrentOrder key={order.id} order={order} onOpenPhoto={setPhotoViewer} />) : <EmptyOrders onBook={() => setBookingOpen(true)} />}</div></section>}
+          {view === 'orders' && <section><div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-8"><div><p className="label text-teal">{hello}{greeting ? `, ${greeting}` : ''}</p><h1 className="mt-2 font-display text-[2rem] font-bold tracking-[-.035em] text-navy sm:mt-3 sm:text-5xl">Ваши заказы</h1></div><div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-[0.6875rem] text-slate-soft shadow-sm sm:text-[0.75rem]"><Clock3 className="h-3.5 w-3.5 text-teal sm:h-4 sm:w-4" /> Данные из AGBIS</div></div><div className="grid gap-6">{data.offer_notifications && !promptClosed && <NotificationsPrompt orders={data.orders} preferences={data.preferences} onSaved={(preferences) => setData((current) => current && { ...current, preferences })} onClose={closePrompt} />}{data.orders.length ? data.orders.map((order) => <CurrentOrder key={order.id} order={order} onOpenPhoto={setPhotoViewer} />) : <EmptyOrders onBook={() => setBookingOpen(true)} />}</div></section>}
           {view === 'history' && <HistoryView active={data.orders} orders={data.history} onBook={() => setBookingOpen(true)} onOpenPhoto={setPhotoViewer} />}
           {view === 'settings' && <SettingsView dashboard={data} onSaved={(preferences) => setData({ ...data, preferences })} onLogout={logout} />}
         </div>
