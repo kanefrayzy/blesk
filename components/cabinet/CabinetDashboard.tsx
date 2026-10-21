@@ -38,7 +38,7 @@ type Photo = { id: string; service_id: string }
 type OrderItem = { id: string; name: string; status: PublicStatus; price: number; discount: number; details: Detail[]; photos: Photo[] }
 type Order = { id: string; number: string; created_at: string; ready_at: string; status: PublicStatus; amount: number; paid: number; pickup: string; items: OrderItem[] }
 type Dashboard = {
-  profile: { name: string | null; first_name: string | null; phone: string; promo_code: string | null }
+  profile: { name: string | null; phone: string; promo_code: string | null }
   orders: Order[]
   history: Order[]
   preferences: { email: string | null; email_notifications: boolean; push_notifications: boolean }
@@ -695,7 +695,7 @@ export function CabinetDashboard() {
 
   const closePrompt = useCallback(() => setPromptClosed(true), [])
 
-  const greeting = data?.profile.first_name ?? null
+  const greeting = data?.profile.name ?? null
   const hello = useMemo(() => greetingByTime(new Date().getHours()), [data])
 
   async function logout() {
